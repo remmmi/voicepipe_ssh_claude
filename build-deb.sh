@@ -9,6 +9,8 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 VERSION="$(sed -n 's/^__version__ = "\(.*\)"/\1/p' "$DIR/client/voxtunnel-tray.py")"
 [ -n "$VERSION" ] || { echo "version not found in voxtunnel-tray.py" >&2; exit 1; }
 
+"$DIR/update-changelog.sh"
+
 BUILD="$(mktemp -d)"
 trap 'rm -rf "$BUILD"' EXIT
 ROOT="$BUILD/voxtunnel_${VERSION}_all"
