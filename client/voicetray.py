@@ -48,10 +48,13 @@ GREEN, GRAY, ORANGE, RED = "#4caf50", "#9e9e9e", "#e6a23c", "#f44336"
 # tampon ALSA reglable depuis la fenetre (voir l'en-tete de voicepipe.sh)
 BUFFER_MIN_MS, BUFFER_DEFAULT_MS, BUFFER_MAX_MS = 40, 80, 300
 
-# detecte si quelqu'un enregistre le loopback distant : un substream de
-# capture pcm1c non "closed" = une ecoute est ouverte sur le VPS
-LISTEN_CMD = ("grep -L closed /proc/asound/Loopback/pcm1c/sub*/status "
-              "2>/dev/null | grep -q . && echo L || echo N")
+# Etat de l'ecoute cote VPS. R = pret (carte Loopback en place),
+# RL = pret et une capture est ouverte en ce moment (un substream pcm1c
+# non "closed"), N = pas de Loopback. Host injoignable = ssh en erreur.
+LISTEN_CMD = ("if [ -d /proc/asound/Loopback ]; then "
+              "grep -L closed /proc/asound/Loopback/pcm1c/sub*/status "
+              "2>/dev/null | grep -q . && echo RL || echo R; "
+              "else echo N; fi")
 
 
 def discover_hosts():
@@ -178,7 +181,7 @@ class ListenerChecker(QObject):
     loopback de chaque host (un process qui enregistre Loopback,1,0).
     Tout est non bloquant : un ssh par host, ramasse par un timer."""
 
-    result = pyqtSignal(str, bool)  # host, ecoute active
+    result = pyqtSignal(str, bool, bool)  # host, pret, capture ouverte
 
     SLOW_MS = 30000   # tous les hosts
     FAST_MS = 3000    # hosts avec un stream actif : l'ecoute distante peut
@@ -214,15 +217,16 @@ class ListenerChecker(QObject):
                     stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
                     stdin=subprocess.DEVNULL)
             except OSError:
-                self.result.emit(host, False)
+                self.result.emit(host, False, False)
 
     def _collect(self):
         for host, proc in list(self.pending.items()):
             if proc.poll() is None:
                 continue
             del self.pending[host]
-            out = proc.stdout.read() if proc.stdout else b""
-            self.result.emit(host, proc.returncode == 0 and b"L" in out)
+            out = (proc.stdout.read() if proc.stdout else b"").strip()
+            ready = proc.returncode == 0 and out in (b"R", b"RL")
+            self.result.emit(host, ready, out == b"RL")
 
 
 class ToggleSwitch(QCheckBox):
@@ -267,19 +271,27 @@ class Voyant(QLabel):
 
 
 class StatusDot(QLabel):
-    """Pastille devant le nom du VPS : vert = une ecoute tourne sur son
-    loopback, rouge = pas d'ecoute (ou host injoignable), gris = inconnu."""
+    """Pastille devant le nom du VPS : vert = ecoute en etat de marche
+    (host joignable, carte Loopback en place), rouge = injoignable ou
+    sans Loopback, gris = pas encore verifie."""
 
     def __init__(self):
         super().__init__()
         self.setFixedSize(10, 10)
-        self.set_state(None)
+        self.set_state(None, False)
 
-    def set_state(self, ok):
-        color = GRAY if ok is None else (GREEN if ok else RED)
+    def set_state(self, ready, capture_open):
+        color = GRAY if ready is None else (GREEN if ready else RED)
         self.setStyleSheet("border-radius: 5px; background: %s;" % color)
-        label = "inconnue" if ok is None else ("active" if ok else "absente")
-        self.setToolTip("écoute distante : " + label)
+        if ready is None:
+            tip = "écoute distante : vérification..."
+        elif not ready:
+            tip = "écoute distante : injoignable ou sans carte Loopback"
+        elif capture_open:
+            tip = "écoute distante : prête, capture ouverte en ce moment"
+        else:
+            tip = "écoute distante : prête"
+        self.setToolTip(tip)
 
 
 class HostRow(QWidget):
@@ -463,10 +475,10 @@ class VoiceTrayApp:
             self.restart_pending.add(host)
             self.manager.stop(host)
 
-    def _on_listener_result(self, host, listening):
+    def _on_listener_result(self, host, ready, capture_open):
         row = self.window.rows.get(host)
         if row:
-            row.dot.set_state(listening)
+            row.dot.set_state(ready, capture_open)
 
     def set_transmitting(self, on):
         self.transmitting = on
