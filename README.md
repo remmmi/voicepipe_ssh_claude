@@ -39,6 +39,21 @@ mic -> arecord ---- ssh (raw PCM) ---> aplay -> snd-aloop loopback
                                        (plughw:Loopback,1,0)
 ```
 
+### Platforms
+
+| Platform | Status | Where |
+|---|---|---|
+| Linux client | Supported, tested on real hardware | `client/` + Debian package |
+| Windows via WSL2 | Works with the Linux client (window shown by WSLg, no tray icon) | `client-windows/` |
+| Windows native | Experimental, CI-tested only | `client-windows/` |
+| macOS | Experimental, CI-tested only | `client-macos/` |
+| Server | Linux only (snd-aloop) | `server/` + Debian package |
+
+The tray app itself is cross-platform (one file, per-OS capture
+backend); a smoke test runs on Linux, macOS and Windows in CI on every
+push. Experimental means exactly that: never validated on real
+hardware — feedback via issues is what will remove the label.
+
 ### Requirements
 
 Client (local Linux desktop):
@@ -140,6 +155,21 @@ juste vos cles SSH et ALSA.
   interrupteur a OFF en expliquant pourquoi.
 - **Installe en deux minutes.** Paquets Debian pour les deux bouts, ou
   deux petits scripts. Cote serveur : un module noyau, purement additif.
+
+### Plateformes
+
+| Plateforme | Statut | Ou |
+|---|---|---|
+| Client Linux | Supporte, teste sur du vrai materiel | `client/` + paquet Debian |
+| Windows via WSL2 | Fonctionne avec le client Linux (fenetre via WSLg, pas d'icone tray) | `client-windows/` |
+| Windows natif | Experimental, teste en CI uniquement | `client-windows/` |
+| macOS | Experimental, teste en CI uniquement | `client-macos/` |
+| Serveur | Linux uniquement (snd-aloop) | `server/` + paquet Debian |
+
+L'app tray est multi-plateforme (un seul fichier, backend de capture
+par OS) ; un test de fumee tourne sur Linux, macOS et Windows en CI a
+chaque push. Experimental veut dire : jamais valide sur du vrai
+materiel — les retours en issue feront tomber l'etiquette.
 
 ### Installation
 

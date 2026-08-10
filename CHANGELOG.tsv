@@ -1,3 +1,4 @@
+1.2.0	2026-08-10	experimental macOS and Windows clients, cross-platform tray, CI on 3 OSes	clients macOS et Windows experimentaux, tray multi-plateforme, CI sur 3 OS
 1.1.1	2026-08-10	guided install prompts (deps, audio group)	installation guidee (dependances, groupe audio)
 1.1.0	2026-08-10	rebrand to Voxtunnel, buffer slider, listener lights, website	rebranding Voxtunnel, slider buffer, temoins d'ecoute, site
 1.0.0	2026-08-10	first release: tray switchboard over SSH	premiere release : tableau d'interrupteurs SSH

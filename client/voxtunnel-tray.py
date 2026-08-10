@@ -23,11 +23,21 @@
 # et affiche l'erreur.
 
 import os
+import re
 import signal
 import subprocess
 import sys
+import tempfile
+import time
 
-__version__ = "1.1.1"
+__version__ = "1.2.0"
+
+# Linux est la plateforme de reference (testee sur du vrai materiel).
+# macOS et Windows sont EXPERIMENTAUX : valides uniquement en CI,
+# jamais sur une vraie machine. Voir client-macos/ et client-windows/.
+IS_LINUX = sys.platform.startswith("linux")
+IS_MAC = sys.platform == "darwin"
+IS_WIN = sys.platform.startswith("win")
 
 from PyQt5.QtCore import QLockFile, QObject, QRectF, QSize, Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QColor, QIcon, QPainter, QPixmap
@@ -57,6 +67,65 @@ LISTEN_CMD = ("if [ -d /proc/asound/Loopback ]; then "
               "grep -L closed /proc/asound/Loopback/pcm1c/sub*/status "
               "2>/dev/null | grep -q . && echo RL || echo R; "
               "else echo N; fi")
+
+# micro pour les backends mac/windows : fichier optionnel avec le nom
+# (dshow) ou l'index avfoundation (":1") du peripherique
+MIC_FILE = os.path.join(os.path.expanduser("~"), ".config", "voxtunnel", "mic")
+
+NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+
+
+def mic_device():
+    try:
+        with open(MIC_FILE) as f:
+            return f.read().strip() or None
+    except OSError:
+        return None
+
+
+def detect_dshow_mic():
+    """Premier peripherique audio DirectShow annonce par ffmpeg."""
+    try:
+        out = subprocess.run(
+            ["ffmpeg", "-hide_banner", "-list_devices", "true",
+             "-f", "dshow", "-i", "dummy"],
+            capture_output=True, text=True, timeout=10,
+            creationflags=NO_WINDOW).stderr
+    except OSError:
+        return None
+    for line in out.splitlines():
+        m = re.search(r'"([^"]+)"\s*\(audio\)', line)
+        if m:
+            return m.group(1)
+    return None
+
+
+def capture_cmd():
+    """Capture micro -> PCM s16le mono 48 kHz sur stdout (mac/windows).
+    Sur Linux c'est voxtunnel.sh qui s'en charge."""
+    if IS_MAC:
+        return ["ffmpeg", "-hide_banner", "-loglevel", "error",
+                "-f", "avfoundation", "-i", mic_device() or ":0",
+                "-f", "s16le", "-ar", "48000", "-ac", "1", "-"]
+    if IS_WIN:
+        dev = mic_device() or detect_dshow_mic()
+        if not dev:
+            raise ValueError("aucun micro dshow trouve ; ecrire son nom "
+                             "exact dans " + MIC_FILE)
+        return ["ffmpeg", "-hide_banner", "-loglevel", "error",
+                "-f", "dshow", "-audio_buffer_size", "20",
+                "-i", "audio=" + dev,
+                "-f", "s16le", "-ar", "48000", "-ac", "1", "-"]
+    raise ValueError("pas de backend de capture pour cette plateforme")
+
+
+def ssh_play_cmd(host, buffer_ms):
+    """Lecture distante vers le loopback, memes reglages que voxtunnel.sh."""
+    return ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10",
+            "-o", "Compression=no", "-o", "IPQoS=lowdelay", host,
+            "aplay -D plughw:Loopback,0,0 -f S16_LE -c 1 -r 48000 -t raw -q "
+            "--buffer-time=%d --period-time=%d"
+            % (buffer_ms * 1000, buffer_ms * 250)]
 
 
 def discover_hosts():
@@ -106,7 +175,8 @@ class StreamManager(QObject):
 
     def __init__(self):
         super().__init__()
-        self.procs = {}      # host -> Popen
+        self.procs = {}      # host -> liste de Popen (pipeline complet)
+        self.started = {}    # host -> horodatage du lancement
         self.stopping = set()
         self.buffer_ms = BUFFER_DEFAULT_MS
         os.makedirs(LOG_DIR, exist_ok=True)
@@ -123,33 +193,54 @@ class StreamManager(QObject):
     def start(self, host):
         if host in self.procs:
             return
-        # ratio tampon/periode 4:1, comme les defauts 80/20 ms du script
-        env = dict(os.environ, VPS_HOST=host,
-                   BUFFER_US=str(self.buffer_ms * 1000),
-                   PERIOD_US=str(self.buffer_ms * 250))
         log = open(self.log_path(host), "wb", buffering=0)
         try:
-            proc = subprocess.Popen(
-                [VOICEPIPE], env=env, stdout=log, stderr=subprocess.STDOUT,
-                stdin=subprocess.DEVNULL, start_new_session=True,
-            )
-        except OSError as e:
+            if IS_LINUX:
+                # chemin de reference : le script fait tout, dans son
+                # propre groupe de process (ratio tampon/periode 4:1)
+                env = dict(os.environ, VPS_HOST=host,
+                           BUFFER_US=str(self.buffer_ms * 1000),
+                           PERIOD_US=str(self.buffer_ms * 250))
+                procs = [subprocess.Popen(
+                    [VOICEPIPE], env=env, stdout=log,
+                    stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+                    start_new_session=True)]
+            else:
+                # mac/windows : pipeline capture | ssh monte ici meme
+                flags = {"creationflags": NO_WINDOW} if IS_WIN else {}
+                cap = subprocess.Popen(
+                    capture_cmd(), stdout=subprocess.PIPE, stderr=log,
+                    stdin=subprocess.DEVNULL, **flags)
+                play = subprocess.Popen(
+                    ssh_play_cmd(host, self.buffer_ms), stdin=cap.stdout,
+                    stdout=log, stderr=subprocess.STDOUT, **flags)
+                cap.stdout.close()
+                procs = [cap, play]
+        except (OSError, ValueError) as e:
             log.close()
             self.state_changed.emit(host, ERROR, str(e))
             return
         log.close()
-        self.procs[host] = proc
+        self.procs[host] = procs
+        self.started[host] = time.monotonic()
         self.state_changed.emit(host, STARTING, "")
 
+    def _terminate(self, proc):
+        try:
+            if IS_LINUX:
+                os.killpg(proc.pid, signal.SIGTERM)
+            else:
+                proc.terminate()
+        except (ProcessLookupError, PermissionError, OSError):
+            pass
+
     def stop(self, host):
-        proc = self.procs.get(host)
-        if not proc:
+        procs = self.procs.get(host)
+        if not procs:
             return
         self.stopping.add(host)
-        try:
-            os.killpg(proc.pid, signal.SIGTERM)
-        except ProcessLookupError:
-            pass
+        for proc in procs:
+            self._terminate(proc)
 
     def stop_all(self):
         for host in list(self.procs):
@@ -164,15 +255,21 @@ class StreamManager(QObject):
             return "pas de log"
 
     def _poll(self):
-        for host, proc in list(self.procs.items()):
-            if proc.poll() is not None:
+        for host, procs in list(self.procs.items()):
+            # le dernier maillon (ssh sur mac/win, le script sur linux)
+            # fait foi pour la vie du stream
+            if procs[-1].poll() is not None:
+                for proc in procs:
+                    if proc.poll() is None:
+                        self._terminate(proc)
                 del self.procs[host]
+                self.started.pop(host, None)
                 if host in self.stopping:
                     self.stopping.discard(host)
                     self.state_changed.emit(host, OFF, "")
                 else:
                     self.state_changed.emit(host, ERROR, self._last_log_line(host))
-            else:
+            elif IS_LINUX:
                 # passe de "connexion" a "actif" quand le preflight est franchi
                 try:
                     with open(self.log_path(host), errors="replace") as f:
@@ -180,6 +277,11 @@ class StreamManager(QObject):
                             self.state_changed.emit(host, ON, "")
                 except OSError:
                     pass
+            else:
+                # pas de preflight sur mac/win : actif = pipeline toujours
+                # vivant apres quelques secondes
+                if time.monotonic() - self.started.get(host, 0) > 2.5:
+                    self.state_changed.emit(host, ON, "")
 
 
 class ListenerChecker(QObject):
@@ -597,23 +699,34 @@ class VoiceTrayApp:
 
 
 def reap_orphans():
-    """Tue les pipelines voxtunnel.sh survivants d'une instance precedente
-    (app tuee sans passer par Quitter : les streams vivent dans leurs
-    propres sessions et continuent d'emettre)."""
-    try:
-        out = subprocess.run(["pgrep", "-f", "voxtunnel.sh"],
-                             capture_output=True, text=True).stdout
-    except OSError:
+    """Tue les pipelines survivants d'une instance precedente (app tuee
+    sans passer par Quitter : les streams continuent d'emettre).
+    POSIX uniquement ; sur Windows les process du pipeline meurent avec
+    la console ou restent visibles dans le gestionnaire de taches."""
+    if os.name != "posix":
         return
-    for token in out.split():
+    for pattern in ("voxtunnel.sh", "plughw:Loopback,0,0"):
         try:
-            os.killpg(os.getpgid(int(token)), signal.SIGTERM)
-        except (ValueError, ProcessLookupError, PermissionError):
-            pass
+            out = subprocess.run(["pgrep", "-f", pattern],
+                                 capture_output=True, text=True).stdout
+        except OSError:
+            return
+        for token in out.split():
+            try:
+                pid = int(token)
+                if pid == os.getpid():
+                    continue
+                try:
+                    os.killpg(os.getpgid(pid), signal.SIGTERM)
+                except (ProcessLookupError, PermissionError):
+                    os.kill(pid, signal.SIGTERM)
+            except (ValueError, ProcessLookupError, PermissionError):
+                pass
 
 
 def main():
-    lock = QLockFile(os.path.join("/tmp", "voxtunnel-%d.lock" % os.getuid()))
+    uid = os.getuid() if hasattr(os, "getuid") else 0
+    lock = QLockFile(os.path.join(tempfile.gettempdir(), "voxtunnel-%d.lock" % uid))
     lock.setStaleLockTime(0)
     if not lock.tryLock(100):
         print("voxtunnel: deja lance", file=sys.stderr)

@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
-/* voxtunnel site css v8 — orbitron, neon rose/jaune/bleu, blanc/creme, grain, lightbox */
+/* voxtunnel site css v9 — orbitron, neon rose/jaune/bleu, blanc/creme, grain, lightbox */
 :root {
   --bg: #0a0a0c;
   --bg-raised: #121216;
@@ -389,6 +389,15 @@ python3 voxtunnel-tray.py
   </div>
 
   <div class="term">
+    <div class="term-head"><span>macOS / Windows — experimental</span><button data-copy="xp">copy</button></div>
+    <pre id="xp"><span class="c"># macOS: brew install ffmpeg python; pip3 install PyQt5</span>
+<span class="c"># Windows: WSL2 recommended (see client-windows/); native: winget install ffmpeg python; pip install PyQt5</span>
+<span class="g">git</span> clone https://github.com/remmmi/voxtunnel.git
+python3 voxtunnel/client/voxtunnel-tray.py
+<span class="c"># CI-tested only, never on real hardware - details in client-macos/ and client-windows/</span></pre>
+  </div>
+
+  <div class="term">
     <div class="term-head"><span>no GUI needed</span><button data-copy="cli2">copy</button></div>
     <pre id="cli2"><span class="g">VPS_HOST</span>=user@my-vps ./voxtunnel.sh --check
 <span class="g">VPS_HOST</span>=user@my-vps ./voxtunnel.sh</pre>
@@ -399,6 +408,7 @@ python3 voxtunnel-tray.py
   <h2>Changelog</h2>
   <ul class="log">
     <!-- changelog:start -->
+    <li><b>v1.2.0</b> <span class="d">2026-08-10</span> — experimental macOS and Windows clients, cross-platform tray, CI on 3 OSes</li>
     <li><b>v1.1.1</b> <span class="d">2026-08-10</span> — guided install prompts (deps, audio group)</li>
     <li><b>v1.1.0</b> <span class="d">2026-08-10</span> — rebrand to Voxtunnel, buffer slider, listener lights, website</li>
     <li><b>v1.0.0</b> <span class="d">2026-08-10</span> — first release: tray switchboard over SSH</li>
@@ -407,7 +417,7 @@ python3 voxtunnel-tray.py
 </section>
 
 <footer>
-  <p>Voxtunnel v1.1.1 &middot; site css v8 &middot; SSH-native voice plumbing &middot; tested on Debian + KDE Plasma</p>
+  <p>Voxtunnel v1.2.0 &middot; site css v9 &middot; SSH-native voice plumbing &middot; tested on Debian + KDE Plasma</p>
   <p><a href="https://github.com/remmmi/voxtunnel">github.com/remmmi/voxtunnel</a></p>
 </footer>
 
