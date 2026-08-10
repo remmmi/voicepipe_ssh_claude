@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Voxtunnel — votre voix, en tunnel direct vers vos serveurs</title>
-<meta name="description" content="Streamez votre micro local via SSH vers la carte son virtuelle de n'importe lequel de vos serveurs. Pas de relais cloud, pas de compte. Juste vos clés SSH et ALSA.">
+<title>Voxtunnel — la voix, en tunnel direct vers les serveurs</title>
+<meta name="description" content="Streame le micro local via SSH vers la carte son virtuelle de n'importe quel serveur. Pas de relais cloud, pas de compte. Juste des clés SSH et ALSA.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
-/* voxtunnel site css v6 — orbitron, neon rose/jaune/bleu, blanc/creme, grain, lightbox */
+/* voxtunnel site css v7 — orbitron, neon rose/jaune/bleu, blanc/creme, grain, lightbox */
 :root {
   --bg: #0a0a0c;
   --bg-raised: #121216;
@@ -287,7 +287,7 @@ a { color: var(--blue); }
 
 <header>
   <h1 class="blackletter">Voxtunnel</h1>
-  <p class="tagline">Votre voix, en tunnel direct vers vos serveurs.</p>
+  <p class="tagline">La voix locale, en tunnel direct vers les serveurs.</p>
   <div class="cta">
     <a class="btn" href="https://github.com/remmmi/voxtunnel/releases/latest">Télécharger le .deb</a>
     <a class="btn ghost" href="https://github.com/remmmi/voxtunnel">Source sur GitHub</a>
@@ -299,7 +299,7 @@ a { color: var(--blue); }
       <span style="margin-left:8px">transmission — en direct</span>
     </div>
     <div class="tunnel-body"><b>MIC</b>&nbsp;<span class="wavebox"><span class="wave">)&nbsp;))&nbsp;)))&nbsp;)&nbsp;))&nbsp;)))&nbsp;)</span></span><span class="gate">═╣</span><b>ssh</b><span class="gate">╠═</span><span class="wavebox"><span class="wave">)&nbsp;))&nbsp;)))&nbsp;)&nbsp;))&nbsp;)))&nbsp;)</span></span><b>SRV</b></div>
-    <div class="tunnel-caption">PCM brut &middot; <em>~150 ms</em> de bout en bout &middot; vos clés, vos machines, rien entre les deux</div>
+    <div class="tunnel-caption">PCM brut &middot; <em>~150 ms</em> de bout en bout &middot; les clés, les machines, rien entre les deux</div>
   </div>
 </header>
 
@@ -322,7 +322,7 @@ a { color: var(--blue); }
     <div class="row">
       <span class="toggle" aria-hidden="true"></span>
       <div>
-        <h3>Votre config SSH est le setup</h3>
+        <h3>La config SSH est le setup</h3>
         <p>Voxtunnel lit <b>~/.ssh/config</b> et donne un interrupteur à chaque host qui a une clé. Rien à déclarer, rien à dupliquer.</p>
       </div>
     </div>
@@ -330,13 +330,13 @@ a { color: var(--blue); }
       <span class="toggle" aria-hidden="true"></span>
       <div>
         <h3>Un interrupteur maître Transmission</h3>
-        <p>Coupez tous les streams d'un clic sans perdre votre sélection par host. Rétablissez : les streams dont l'interrupteur est <b>ON</b> reviennent.</p>
+        <p>Un clic coupe tous les streams sans perdre la sélection par host. Rétabli, les streams dont l'interrupteur est <b>ON</b> reviennent.</p>
       </div>
     </div>
     <div class="row">
       <span class="toggle" aria-hidden="true"></span>
       <div>
-        <h3>Vit dans votre barre système</h3>
+        <h3>Vit dans la barre système</h3>
         <p>La fenêtre est optionnelle : l'icône du tray porte les <b>mêmes interrupteurs</b> dans son menu. Icône verte quand la transmission est active, rouge barrée quand la ligne est coupée.</p>
       </div>
     </div>
@@ -351,14 +351,14 @@ a { color: var(--blue); }
       <span class="toggle" aria-hidden="true"></span>
       <div>
         <h3>Des voyants honnêtes, pas de retry magique</h3>
-        <p>Un petit écran par host indique si le bout distant est prêt. Un stream mort repasse son interrupteur à OFF et vous dit pourquoi. La latence est un slider, pas un mystère.</p>
+        <p>Un petit écran par host indique si le bout distant est prêt. Un stream mort repasse son interrupteur à OFF et dit pourquoi. La latence est un slider, pas un mystère.</p>
       </div>
     </div>
   </div>
 </section>
 
 <section id="install">
-  <h2>Invoquez-le</h2>
+  <h2>L'invocation</h2>
 
   <div class="term">
     <div class="term-head"><span>serveur (VPS)</span><button data-copy="srv">copier</button></div>
@@ -368,7 +368,7 @@ a { color: var(--blue); }
   </div>
 
   <div class="term">
-    <div class="term-head"><span>client (votre bureau)</span><button data-copy="cli">copier</button></div>
+    <div class="term-head"><span>client (bureau)</span><button data-copy="cli">copier</button></div>
     <pre id="cli"><span class="g">sudo</span> apt install ./voxtunnel_*.deb
 voxtunnel</pre>
   </div>
@@ -391,7 +391,7 @@ python3 voxtunnel-tray.py
 </section>
 
 <footer>
-  <p>Voxtunnel v1.1.0 &middot; site css v6 &middot; plomberie SSH pour votre voix &middot; testé sur Debian + KDE Plasma</p>
+  <p>Voxtunnel v1.1.0 &middot; site css v7 &middot; plomberie SSH pour la voix &middot; testé sur Debian + KDE Plasma</p>
   <p><a href="https://github.com/remmmi/voxtunnel">github.com/remmmi/voxtunnel</a> &middot; <a href="../">English version</a></p>
 </footer>
 

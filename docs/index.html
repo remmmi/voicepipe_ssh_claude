@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Voxtunnel — your voice, tunneled straight to your servers</title>
-<meta name="description" content="Stream your local microphone over SSH to the virtual sound card of any of your servers. No cloud relay, no account. Just your SSH keys and ALSA.">
+<title>Voxtunnel — voice, tunneled straight to the servers</title>
+<meta name="description" content="Streams the local microphone over SSH to the virtual sound card of any server. No cloud relay, no account. Just SSH keys and ALSA.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
-/* voxtunnel site css v6 — orbitron, neon rose/jaune/bleu, blanc/creme, grain, lightbox */
+/* voxtunnel site css v7 — orbitron, neon rose/jaune/bleu, blanc/creme, grain, lightbox */
 :root {
   --bg: #0a0a0c;
   --bg-raised: #121216;
@@ -285,7 +285,7 @@ a { color: var(--blue); }
 
 <header>
   <h1 class="blackletter">Voxtunnel</h1>
-  <p class="tagline">Your voice, tunneled straight to your servers.</p>
+  <p class="tagline">The local voice, tunneled straight to the servers.</p>
   <div class="cta">
     <a class="btn" href="https://github.com/remmmi/voxtunnel/releases/latest">Download .deb</a>
     <a class="btn ghost" href="https://github.com/remmmi/voxtunnel">Source on GitHub</a>
@@ -297,7 +297,7 @@ a { color: var(--blue); }
       <span style="margin-left:8px">transmission — live</span>
     </div>
     <div class="tunnel-body"><b>MIC</b>&nbsp;<span class="wavebox"><span class="wave">)&nbsp;))&nbsp;)))&nbsp;)&nbsp;))&nbsp;)))&nbsp;)</span></span><span class="gate">═╣</span><b>ssh</b><span class="gate">╠═</span><span class="wavebox"><span class="wave">)&nbsp;))&nbsp;)))&nbsp;)&nbsp;))&nbsp;)))&nbsp;)</span></span><b>SRV</b></div>
-    <div class="tunnel-caption">raw PCM &middot; <em>~150 ms</em> end to end &middot; your keys, your machines, nothing in between</div>
+    <div class="tunnel-caption">raw PCM &middot; <em>~150 ms</em> end to end &middot; the keys, the machines, nothing in between</div>
   </div>
 </header>
 
@@ -320,7 +320,7 @@ a { color: var(--blue); }
     <div class="row">
       <span class="toggle" aria-hidden="true"></span>
       <div>
-        <h3>Your SSH config is the setup</h3>
+        <h3>The SSH config is the setup</h3>
         <p>Voxtunnel reads <b>~/.ssh/config</b> and gives every host with a key its own switch. Nothing to declare, nothing to duplicate.</p>
       </div>
     </div>
@@ -328,13 +328,13 @@ a { color: var(--blue); }
       <span class="toggle" aria-hidden="true"></span>
       <div>
         <h3>One master Transmission toggle</h3>
-        <p>Cut every stream in one click without losing your per-host selection. Flip it back: the streams whose switch is <b>ON</b> return.</p>
+        <p>One click cuts every stream without losing the per-host selection. Flipped back, the streams whose switch is <b>ON</b> return.</p>
       </div>
     </div>
     <div class="row">
       <span class="toggle" aria-hidden="true"></span>
       <div>
-        <h3>Lives in your system tray</h3>
+        <h3>Lives in the system tray</h3>
         <p>The window is optional: the tray icon carries the <b>same switches</b> in its menu. Green icon while transmission is on, red crossed icon when the line is cut.</p>
       </div>
     </div>
@@ -349,14 +349,14 @@ a { color: var(--blue); }
       <span class="toggle" aria-hidden="true"></span>
       <div>
         <h3>Honest lights, no magic retry</h3>
-        <p>A monitor glyph per host shows if the far end is ready. A dead stream flips its own switch off and tells you why. Latency is a slider, not a mystery.</p>
+        <p>A monitor glyph per host shows if the far end is ready. A dead stream flips its own switch off and says why. Latency is a slider, not a mystery.</p>
       </div>
     </div>
   </div>
 </section>
 
 <section id="install">
-  <h2>Summon it</h2>
+  <h2>The summoning</h2>
 
   <div class="term">
     <div class="term-head"><span>server (VPS)</span><button data-copy="srv">copy</button></div>
@@ -366,7 +366,7 @@ a { color: var(--blue); }
   </div>
 
   <div class="term">
-    <div class="term-head"><span>client (your desktop)</span><button data-copy="cli">copy</button></div>
+    <div class="term-head"><span>client (desktop)</span><button data-copy="cli">copy</button></div>
     <pre id="cli"><span class="g">sudo</span> apt install ./voxtunnel_*.deb
 voxtunnel</pre>
   </div>
@@ -389,7 +389,7 @@ python3 voxtunnel-tray.py
 </section>
 
 <footer>
-  <p>Voxtunnel v1.1.0 &middot; site css v6 &middot; SSH-native plumbing for your voice &middot; tested on Debian + KDE Plasma</p>
+  <p>Voxtunnel v1.1.0 &middot; site css v7 &middot; SSH-native voice plumbing &middot; tested on Debian + KDE Plasma</p>
   <p><a href="https://github.com/remmmi/voxtunnel">github.com/remmmi/voxtunnel</a></p>
 </footer>
 
