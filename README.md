@@ -4,6 +4,8 @@
 
 [English](#english) | [Francais](#francais) | [Website](https://remmmi.github.io/voxtunnel/) | [Latest release](https://github.com/remmmi/voxtunnel/releases/latest)
 
+<p align="center"><img src="docs/voxtunnel-window.png" width="420" alt="Voxtunnel window: master Transmission toggle, one switch per server, buffer slider"></p>
+
 ---
 
 ## English
