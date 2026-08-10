@@ -16,7 +16,9 @@ repository README for the full picture.
 - `install.sh` — user-level install of the desktop launcher (no root).
 - `voxtunnel.desktop.in` — launcher template; `@DIR@` is replaced by
   the absolute path of this folder at install time.
-- `icons/` — SVG tray icons (green = transmitting, red = cut).
+- `icons/` — SVG tray icons: the VOX wordmark, outlines vectorised from
+  Orbitron 900 (the site's display font), so no font needs to be installed.
+  Site colours = transmitting, grey = idle, red with a diagonal cut = off.
 
 ## Installing without breaking the machine
 

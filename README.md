@@ -105,8 +105,9 @@ Every `Host` with an `IdentityFile` in `~/.ssh/config` gets a switch
 (wildcards and `github.com` are skipped; add exclusions in
 `~/.config/voxtunnel/ignore`, one host per line). Several streams can
 run at once. Left click the tray icon to show the window, right click
-for the same switches in a menu. Green icon: transmission enabled; red
-crossed icon: transmission cut. Logs per host in
+for the same switches in a menu. The icon is the VOX wordmark: in the
+site colours when transmission is enabled, red with a diagonal cut when
+it is off, grey while idle. Logs per host in
 `~/.cache/voxtunnel/<host>.log`. No automatic reconnect by design: a
 dead stream turns its switch off and shows the error.
 
@@ -208,8 +209,10 @@ Chaque `Host` de `~/.ssh/config` avec un `IdentityFile` recoit un
 interrupteur (jokers et `github.com` ignores ; exclusions dans
 `~/.config/voxtunnel/ignore`, un host par ligne). Plusieurs streams
 peuvent tourner en meme temps. Clic gauche sur l'icone tray : la
-fenetre ; clic droit : les memes interrupteurs en menu. Icone verte :
-transmission active ; rouge barree : coupee. Logs par host dans
+fenetre ; clic droit : les memes interrupteurs en menu. L'icone est le
+logotype VOX : aux couleurs du site quand la transmission est active,
+rouge avec une entaille en diagonale quand elle est coupee, grise au
+repos. Logs par host dans
 `~/.cache/voxtunnel/<host>.log`. Pas de reconnexion automatique, par
 choix : un stream mort repasse a OFF et affiche l'erreur.
 
