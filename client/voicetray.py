@@ -28,7 +28,7 @@ import subprocess
 import sys
 
 from PyQt5.QtCore import QLockFile, QObject, QRectF, QSize, Qt, QTimer, pyqtSignal
-from PyQt5.QtGui import QColor, QIcon, QPainter
+from PyQt5.QtGui import QColor, QIcon, QPainter, QPixmap
 from PyQt5.QtWidgets import (
     QApplication, QCheckBox, QFrame, QHBoxLayout, QLabel, QMenu, QSlider,
     QSystemTrayIcon, QVBoxLayout, QWidget,
@@ -271,18 +271,33 @@ class Voyant(QLabel):
 
 
 class StatusDot(QLabel):
-    """Pastille devant le nom du VPS : vert = ecoute en etat de marche
-    (host joignable, carte Loopback en place), rouge = injoignable ou
-    sans Loopback, gris = pas encore verifie."""
+    """Petit ordinateur devant le nom du VPS : vert = ecoute en etat de
+    marche (host joignable, carte Loopback en place), rouge = injoignable
+    ou sans Loopback, gris = pas encore verifie."""
 
     def __init__(self):
         super().__init__()
-        self.setFixedSize(10, 10)
+        self.setFixedSize(15, 15)
         self.set_state(None, False)
+
+    @staticmethod
+    def _computer_pixmap(color):
+        # silhouette de moniteur : ecran, pied, socle
+        pix = QPixmap(15, 15)
+        pix.fill(Qt.transparent)
+        p = QPainter(pix)
+        p.setRenderHint(QPainter.Antialiasing)
+        p.setPen(Qt.NoPen)
+        p.setBrush(QColor(color))
+        p.drawRoundedRect(QRectF(1, 1.5, 13, 8.5), 1.5, 1.5)
+        p.drawRect(QRectF(6.5, 10, 2, 2))
+        p.drawRoundedRect(QRectF(4, 12, 7, 1.8), 0.9, 0.9)
+        p.end()
+        return pix
 
     def set_state(self, ready, capture_open):
         color = GRAY if ready is None else (GREEN if ready else RED)
-        self.setStyleSheet("border-radius: 5px; background: %s;" % color)
+        self.setPixmap(self._computer_pixmap(color))
         if ready is None:
             tip = "écoute distante : vérification..."
         elif not ready:
@@ -537,7 +552,7 @@ class VoiceTrayApp:
 
     def _update_tray(self):
         self.checker.active = set(self.manager.procs)
-        # couleurs forcees : vert = transmission active, orange = coupee
+        # couleurs forcees : vert = transmission active, rouge = coupee
         if not self.transmitting:
             self.tray.setIcon(self.icon_off)
             self.tray.setToolTip("VoicePipe — transmission coupée")
