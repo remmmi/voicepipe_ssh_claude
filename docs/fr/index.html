@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Voxtunnel — la voix, en tunnel direct vers les serveurs</title>
 <meta name="description" content="Streame le micro local via SSH vers la carte son virtuelle de n'importe quel serveur. Pas de relais cloud, pas de compte. Juste des clés SSH et ALSA.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
@@ -134,6 +137,14 @@ header { padding: 84px 0 40px; text-align: center; }
   color: var(--text);
 }
 .tunnel-caption em { color: var(--yellow); font-style: normal; }
+.wanted {
+  margin-top: 18px;
+  padding: 12px 16px;
+  border: 1px dashed var(--yellow);
+  font-size: .85rem;
+  color: var(--cream);
+}
+.wanted a { color: var(--yellow); }
 
 /* ---------- sections ---------- */
 section { padding: 56px 0 8px; }
@@ -398,6 +409,13 @@ python3 voxtunnel-tray.py
 python3 voxtunnel/client/voxtunnel-tray.py
 <span class="c"># testé en CI uniquement, jamais sur du vrai matériel - détails dans client-macos/ et client-windows/</span></pre>
   </div>
+
+  <p class="wanted">Vous avez un Mac ou une machine Windows ? Ces clients
+  n'ont jamais vu que des runners CI. Si vous avez dix minutes pour en
+  essayer un sur du vrai matériel,
+  <a href="https://github.com/remmmi/voxtunnel/issues">ouvrez une issue</a>
+  avec ce qui a marché et ce qui a cassé — même « ça se lance » vaut de
+  l'or.</p>
 
   <div class="term">
     <div class="term-head"><span>sans interface graphique</span><button data-copy="cli2">copier</button></div>
