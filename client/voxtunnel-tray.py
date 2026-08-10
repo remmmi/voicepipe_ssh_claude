@@ -27,7 +27,7 @@ import signal
 import subprocess
 import sys
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 from PyQt5.QtCore import QLockFile, QObject, QRectF, QSize, Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QColor, QIcon, QPainter, QPixmap

@@ -5,6 +5,30 @@ set -euo pipefail
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
+ask() { # question avec defaut oui ; sans TTY, repond non
+  [ -t 0 ] || return 1
+  read -r -p "$1 [Y/n] " a
+  case "$a" in n|N|no|non) return 1 ;; *) return 0 ;; esac
+}
+
+# --- dependances : proposees en Y/n, sudo demande son mot de passe lui-meme --
+MISSING=""
+python3 -c "import PyQt5" 2>/dev/null || MISSING="$MISSING python3-pyqt5"
+command -v arecord >/dev/null || command -v ffmpeg >/dev/null || MISSING="$MISSING alsa-utils"
+command -v ssh >/dev/null || MISSING="$MISSING openssh-client"
+if [ -n "$MISSING" ]; then
+  echo "Missing packages:$MISSING"
+  if command -v apt-get >/dev/null && ask "Install them now with sudo apt-get?"; then
+    sudo apt-get install -y $MISSING
+  else
+    echo ""
+    echo "Install aborted: Voxtunnel cannot run without these packages."
+    echo "Install them, then rerun this script:"
+    echo "  sudo apt-get install$MISSING && ./install.sh"
+    exit 1
+  fi
+fi
+
 chmod +x "$DIR/voxtunnel-tray.py" "$DIR/voxtunnel.sh"
 
 APPS="$HOME/.local/share/applications"

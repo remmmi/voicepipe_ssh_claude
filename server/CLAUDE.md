@@ -28,8 +28,10 @@ these rules strictly:
   packages. Voxtunnel does not need any of that.
 - No reboot is required. Do not reboot a production VPS for this.
 - The SSH user needs permission to open audio devices: on most distros
-  that means being in the `audio` group (`usermod -aG audio <user>`), only
-  if `aplay` fails with a permission error. Do not change anything else
+  that means being in the `audio` group. `setup-vps.sh` detects this and
+  asks before running `usermod -aG audio <user>` (answering no aborts
+  with an explanation); the Debian package prints the command instead,
+  as maintainer scripts must not prompt. Do not change anything else
   about the user.
 
 ## Verify

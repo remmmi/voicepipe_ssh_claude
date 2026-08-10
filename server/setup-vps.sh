@@ -51,4 +51,27 @@ if [ "${1:-}" = "--persist" ]; then
   fi
 fi
 
+# --- audio group for the SSH user (Y/n) ---------------------------------------
+# aplay needs access to /dev/snd; root has it, other users need the group.
+TARGET="${SUDO_USER:-}"
+if [ -n "$TARGET" ] && [ "$TARGET" != "root" ] \
+   && ! id -nG "$TARGET" 2>/dev/null | grep -qw audio; then
+  if [ -t 0 ]; then
+    printf 'add %s to the audio group (needed to stream as this user)? [Y/n] ' "$TARGET"
+    read -r a
+    case "$a" in
+      n|N|no|non)
+        say "aborted: without the audio group, $TARGET cannot open /dev/snd"
+        say "and every stream toward this VPS as $TARGET will fail with a"
+        say "permission error. Rerun this script to retry, or do it by hand:"
+        say "  usermod -aG audio $TARGET"
+        exit 1 ;;
+      *) usermod -aG audio "$TARGET"
+         say "$TARGET added to the audio group (takes effect on next SSH login)" ;;
+    esac
+  else
+    say "note: to stream as $TARGET, run: usermod -aG audio $TARGET"
+  fi
+fi
+
 say "done. Recording side on this VPS reads from: plughw:Loopback,1,0"

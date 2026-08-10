@@ -100,6 +100,9 @@ set -e
 if [ "$1" = "configure" ]; then
     modprobe snd-aloop 2>/dev/null \
         || echo "voxtunnel-server: snd-aloop not loadable now, will load at boot"
+    # Debian policy forbids interactive prompts here, so just say it:
+    echo "voxtunnel-server: streaming as a non-root SSH user requires the"
+    echo "voxtunnel-server: audio group:  usermod -aG audio <user>"
 fi
 exit 0
 EOF
