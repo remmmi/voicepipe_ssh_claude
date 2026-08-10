@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 #
-# voicepipe.sh — streame le micro de la machine locale vers la carte son
+# voxtunnel.sh — streame le micro de la machine locale vers la carte son
 # virtuelle (snd-aloop) d'un VPS distant, via SSH.
 #
 # A LANCER SUR LA MACHINE LOCALE (celle qui a le micro), pas sur le VPS.
 #
-#   ./voicepipe.sh --check          verifie les deux bouts, ne streame pas
-#   ./voicepipe.sh                  streame jusqu'a Ctrl-C
-#   ./voicepipe.sh --tone           envoie un ton de test au lieu du micro
+#   ./voxtunnel.sh --check          verifie les deux bouts, ne streame pas
+#   ./voxtunnel.sh                  streame jusqu'a Ctrl-C
+#   ./voxtunnel.sh --tone           envoie un ton de test au lieu du micro
 #
 # Config par variables d'environnement :
 #   VPS_HOST   user@host SSH               (obligatoire)
@@ -17,10 +17,10 @@
 #   PERIOD_US  periode ALSA en us          (defaut: 20000)
 #
 # Exemple :
-#   VPS_HOST=user@my-vps ./voicepipe.sh
+#   VPS_HOST=user@my-vps ./voxtunnel.sh
 #
 # Si tu entends des micro-coupures (xruns), remonte les tampons :
-#   BUFFER_US=200000 PERIOD_US=50000 VPS_HOST=... ./voicepipe.sh
+#   BUFFER_US=200000 PERIOD_US=50000 VPS_HOST=... ./voxtunnel.sh
 #
 # Pas de relance automatique : si le pipe meurt, tu relances a la main.
 # Une boucle de retry sans garde TTY dans un fichier de demarrage shell
@@ -56,7 +56,7 @@ case "${1:-}" in
   *) echo "argument inconnu: $1 (voir --help)" >&2; exit 2 ;;
 esac
 
-die() { echo "voicepipe: $*" >&2; exit 1; }
+die() { echo "voxtunnel: $*" >&2; exit 1; }
 
 [ -n "$VPS_HOST" ] || die "VPS_HOST n'est pas defini. Ex: VPS_HOST=user@ip $0"
 
@@ -111,14 +111,14 @@ preflight() {
 
 case "$MODE" in
   check)
-    echo "voicepipe — verification"
+    echo "voxtunnel — verification"
     preflight
     echo
     echo "Les deux bouts repondent. Lance sans --check pour streamer."
     ;;
 
   tone)
-    echo "voicepipe — ton de test (1 kHz, 5 s) vers $VPS_HOST"
+    echo "voxtunnel — ton de test (1 kHz, 5 s) vers $VPS_HOST"
     preflight
     echo
     echo "Sur le VPS, en parallele :"
@@ -132,7 +132,7 @@ case "$MODE" in
     ;;
 
   stream)
-    echo "voicepipe — micro local vers $VPS_HOST"
+    echo "voxtunnel — micro local vers $VPS_HOST"
     preflight
     echo
     echo "Streaming (tampon ${BUFFER_US}us, periode ${PERIOD_US}us). Ctrl-C pour couper."

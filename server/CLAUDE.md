@@ -1,6 +1,6 @@
-# VoicePipe — server (VPS)
+# Voxtunnel — server (VPS)
 
-This folder is the REMOTE side of VoicePipe. The server receives raw PCM
+This folder is the REMOTE side of Voxtunnel. The server receives raw PCM
 audio over SSH and plays it into an ALSA loopback card (`snd-aloop`), where
 any local program (speech-to-text, a voice assistant, Claude Code voice
 input, ...) can record it as if a real microphone were plugged in.
@@ -15,17 +15,17 @@ these rules strictly:
 
 - Inspect before changing: `lsmod | grep snd`, `aplay -l`, and check
   whether an audio stack is already in use by another service.
-- Preferred on Debian: install the `voicepipe-server` package from the
-  GitHub releases (`sudo apt install ./voicepipe-server_*.deb`). It only
+- Preferred on Debian: install the `voxtunnel-server` package from the
+  GitHub releases (`sudo apt install ./voxtunnel-server_*.deb`). It only
   pulls `alsa-utils`, loads `snd-aloop` and persists it via
-  `/etc/modules-load.d/voicepipe-snd-aloop.conf`; removal is a clean
-  `apt purge voicepipe-server`.
+  `/etc/modules-load.d/voxtunnel-snd-aloop.conf`; removal is a clean
+  `apt purge voxtunnel-server`.
 - Otherwise run `setup-vps.sh` (idempotent). It installs `alsa-utils` if
   missing, loads `snd-aloop`, and with `--persist` writes a single line to
-  `/etc/modules-load.d/snd-aloop.conf`.
+  `/etc/modules-load.d/voxtunnel-snd-aloop.conf`.
 - NEVER edit `/etc/asound.conf`, `~/.asoundrc`, PulseAudio or PipeWire
   configuration, and never uninstall or reconfigure existing audio
-  packages. VoicePipe does not need any of that.
+  packages. Voxtunnel does not need any of that.
 - No reboot is required. Do not reboot a production VPS for this.
 - The SSH user needs permission to open audio devices: on most distros
   that means being in the `audio` group (`usermod -aG audio <user>`), only
@@ -39,14 +39,14 @@ aplay -l | grep Loopback                       # card is visible
 arecord -D plughw:Loopback,1,0 -f S16_LE -c1 -r48000 -d 3 /tmp/test.wav
 ```
 
-Then from the client: `VPS_HOST=user@this-vps ./voicepipe.sh --check`
+Then from the client: `VPS_HOST=user@this-vps ./voxtunnel.sh --check`
 (and `--tone` to send a 5 s test tone while the arecord above runs).
 
 ## Rollback
 
 ```
 rmmod snd-aloop                                # unload for this boot
-rm -f /etc/modules-load.d/snd-aloop.conf       # remove persistence
+rm -f /etc/modules-load.d/voxtunnel-snd-aloop.conf       # remove persistence
 ```
 
 Nothing else was changed.

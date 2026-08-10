@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voxtunnel — your voice, tunneled straight to your servers</title>
+<meta name="description" content="Stream your local microphone over SSH to the virtual sound card of any of your servers. No cloud relay, no account. Just your SSH keys and ALSA.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0c;
+  --bg-raised: #121216;
+  --frame: #26262e;
+  --bone: #d8d3c8;
+  --dim: #7a7a85;
+  --green: #4caf50;
+  --red: #f44336;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--bone);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 15px;
+  line-height: 1.65;
+  position: relative;
+}
+/* scanlines CRT discretes */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg, transparent 0 2px, rgba(0,0,0,.16) 2px 4px);
+  z-index: 3;
+}
+.wrap { max-width: 880px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+
+/* ---------- hero ---------- */
+header { padding: 84px 0 40px; text-align: center; }
+.blackletter {
+  font-family: "UnifrakturMaguntia", serif;
+  font-size: clamp(3rem, 10vw, 5.5rem);
+  font-weight: 400;
+  color: var(--bone);
+  letter-spacing: .01em;
+  text-shadow: 0 0 22px rgba(76,175,80,.35), 0 0 60px rgba(76,175,80,.12);
+}
+.tagline { margin-top: 10px; font-size: 1.05rem; color: var(--bone); }
+.tagline-fr { margin-top: 4px; font-size: .85rem; color: var(--dim); }
+.cta { margin-top: 30px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.btn {
+  display: inline-block;
+  padding: 11px 22px;
+  border: 1px solid var(--green);
+  color: var(--green);
+  text-decoration: none;
+  font-size: .9rem;
+  letter-spacing: .04em;
+  background: transparent;
+  transition: background .15s, color .15s, box-shadow .15s;
+}
+.btn:hover, .btn:focus-visible {
+  background: var(--green);
+  color: var(--bg);
+  box-shadow: 0 0 24px rgba(76,175,80,.45);
+}
+.btn.ghost { border-color: var(--frame); color: var(--dim); }
+.btn.ghost:hover, .btn.ghost:focus-visible {
+  border-color: var(--bone); color: var(--bone);
+  background: transparent; box-shadow: none;
+}
+
+/* ---------- le tunnel (signature) ---------- */
+.tunnel {
+  margin: 46px auto 0;
+  border: 1px solid var(--frame);
+  background: var(--bg-raised);
+  text-align: left;
+  overflow: hidden;
+}
+.tunnel-bar {
+  display: flex; gap: 6px; align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--frame);
+  color: var(--dim); font-size: .75rem;
+}
+.tunnel-bar span.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--frame); display: inline-block; }
+.tunnel-bar span.dot.live { background: var(--green); box-shadow: 0 0 8px rgba(76,175,80,.8); }
+.tunnel-body {
+  padding: 26px 18px;
+  font-size: clamp(.72rem, 2.4vw, 1rem);
+  white-space: nowrap;
+  color: var(--dim);
+  display: flex; align-items: center; justify-content: center; gap: 0;
+}
+.tunnel-body b { color: var(--bone); font-weight: 600; }
+.tunnel-body .gate { color: var(--bone); }
+.wavebox {
+  display: inline-block;
+  width: 11ch;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+.wave {
+  display: inline-block;
+  color: var(--green);
+  text-shadow: 0 0 10px rgba(76,175,80,.7);
+  animation: flow 1.6s linear infinite;
+}
+@keyframes flow { from { transform: translateX(-4ch); } to { transform: translateX(0); } }
+.tunnel-caption {
+  border-top: 1px solid var(--frame);
+  padding: 8px 12px;
+  font-size: .75rem;
+  color: var(--dim);
+}
+.tunnel-caption em { color: var(--green); font-style: normal; }
+
+/* ---------- sections ---------- */
+section { padding: 56px 0 8px; }
+h2 {
+  font-family: "UnifrakturMaguntia", serif;
+  font-weight: 400;
+  font-size: 2rem;
+  color: var(--bone);
+}
+.fr { color: var(--dim); font-size: .82rem; margin: 2px 0 26px; }
+
+/* switchboard des features */
+.board { border: 1px solid var(--frame); background: var(--bg-raised); }
+.row {
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  gap: 16px;
+  padding: 18px;
+  border-bottom: 1px solid var(--frame);
+  align-items: start;
+}
+.row:last-child { border-bottom: none; }
+.toggle {
+  width: 40px; height: 21px;
+  border-radius: 11px;
+  background: var(--green);
+  position: relative;
+  margin-top: 3px;
+  box-shadow: 0 0 12px rgba(76,175,80,.35);
+  flex: none;
+}
+.toggle::after {
+  content: "";
+  position: absolute;
+  top: 2px; right: 2px;
+  width: 17px; height: 17px;
+  border-radius: 50%;
+  background: var(--bg);
+}
+.row h3 { font-size: .95rem; font-weight: 600; color: var(--bone); }
+.row p { color: var(--dim); font-size: .88rem; margin-top: 4px; }
+.row p b { color: var(--green); font-weight: 500; }
+
+/* install */
+.term {
+  border: 1px solid var(--frame);
+  background: var(--bg-raised);
+  margin-bottom: 22px;
+}
+.term-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--frame);
+  color: var(--dim); font-size: .78rem;
+}
+.term-head button {
+  font: inherit; color: var(--dim);
+  background: none; border: 1px solid var(--frame);
+  padding: 2px 10px; cursor: pointer;
+}
+.term-head button:hover, .term-head button:focus-visible { color: var(--green); border-color: var(--green); }
+.term pre {
+  padding: 16px 18px;
+  overflow-x: auto;
+  font-size: .85rem;
+  line-height: 1.8;
+}
+.term pre .c { color: var(--dim); }
+.term pre .g { color: var(--green); }
+
+/* footer */
+footer {
+  margin-top: 70px;
+  border-top: 1px solid var(--frame);
+  padding: 26px 0 40px;
+  text-align: center;
+  color: var(--dim);
+  font-size: .8rem;
+}
+footer a { color: var(--dim); }
+footer a:hover { color: var(--green); }
+footer .rune {
+  font-family: "UnifrakturMaguntia", serif;
+  color: var(--frame);
+  font-size: 1.3rem;
+  display: block;
+  margin-bottom: 8px;
+}
+
+a { color: var(--green); }
+:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .wave { animation: none; }
+  html { scroll-behavior: auto; }
+}
+@media (max-width: 560px) {
+  header { padding-top: 56px; }
+  .row { grid-template-columns: 40px 1fr; gap: 10px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1 class="blackletter">Voxtunnel</h1>
+  <p class="tagline">Your voice, tunneled straight to your servers.</p>
+  <p class="tagline-fr">Votre voix, en tunnel direct vers vos serveurs.</p>
+  <div class="cta">
+    <a class="btn" href="https://github.com/remmmi/voxtunnel/releases/latest">Download .deb</a>
+    <a class="btn ghost" href="https://github.com/remmmi/voxtunnel">Source on GitHub</a>
+  </div>
+
+  <div class="tunnel" aria-label="Diagram: microphone audio flowing through an SSH tunnel to a server">
+    <div class="tunnel-bar">
+      <span class="dot live"></span><span class="dot"></span><span class="dot"></span>
+      <span style="margin-left:8px">transmission — live</span>
+    </div>
+    <div class="tunnel-body"><b>MIC</b>&nbsp;<span class="wavebox"><span class="wave">)&nbsp;))&nbsp;)))&nbsp;)&nbsp;))&nbsp;)))&nbsp;)</span></span><span class="gate">═╣</span><b>ssh</b><span class="gate">╠═</span><span class="wavebox"><span class="wave">)&nbsp;))&nbsp;)))&nbsp;)&nbsp;))&nbsp;)))&nbsp;)</span></span><b>SRV</b></div>
+    <div class="tunnel-caption">raw PCM &middot; <em>~150 ms</em> end to end &middot; your keys, your machines, nothing in between</div>
+  </div>
+</header>
+
+<section id="features">
+  <h2>The switchboard</h2>
+  <p class="fr">Le tableau d'interrupteurs — chaque serveur a le sien.</p>
+  <div class="board">
+    <div class="row">
+      <span class="toggle" aria-hidden="true"></span>
+      <div>
+        <h3>Your SSH config is the setup</h3>
+        <p>Voxtunnel reads <b>~/.ssh/config</b> and gives every host with a key its own switch. Nothing to declare, nothing to duplicate. <span lang="fr">/ Vos hosts SSH deviennent des interrupteurs, rien a configurer.</span></p>
+      </div>
+    </div>
+    <div class="row">
+      <span class="toggle" aria-hidden="true"></span>
+      <div>
+        <h3>One master Transmission toggle</h3>
+        <p>Cut every stream in one click without losing your per-host selection. Flip it back: the streams whose switch is <b>ON</b> return. <span lang="fr">/ Coupez tout d'un clic, retablissez, tout revient.</span></p>
+      </div>
+    </div>
+    <div class="row">
+      <span class="toggle" aria-hidden="true"></span>
+      <div>
+        <h3>The server hears a real microphone</h3>
+        <p>Audio lands in the <b>snd-aloop</b> loopback card. Speech-to-text, voice assistants or Claude Code voice input record it like local hardware. <span lang="fr">/ Le serveur enregistre votre voix comme un vrai micro.</span></p>
+      </div>
+    </div>
+    <div class="row">
+      <span class="toggle" aria-hidden="true"></span>
+      <div>
+        <h3>Honest lights, no magic retry</h3>
+        <p>A monitor glyph per host shows if the far end is ready. A dead stream flips its own switch off and tells you why. Latency is a slider, not a mystery. <span lang="fr">/ Des voyants honnetes, une latence reglable.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <h2>Summon it</h2>
+  <p class="fr">Installation — deux minutes, deux paquets.</p>
+
+  <div class="term">
+    <div class="term-head"><span>server (VPS)</span><button data-copy="srv">copy</button></div>
+    <pre id="srv"><span class="c"># from github.com/remmmi/voxtunnel/releases/latest</span>
+<span class="g">sudo</span> apt install ./voxtunnel-server_*.deb
+<span class="c"># loads snd-aloop now and at every boot - purely additive</span></pre>
+  </div>
+
+  <div class="term">
+    <div class="term-head"><span>client (your desktop)</span><button data-copy="cli">copy</button></div>
+    <pre id="cli"><span class="g">sudo</span> apt install ./voxtunnel_*.deb
+voxtunnel
+<span class="c"># or, without root: clone the repo, client/install.sh</span></pre>
+  </div>
+
+  <div class="term">
+    <div class="term-head"><span>no GUI needed</span><button data-copy="cli2">copy</button></div>
+    <pre id="cli2"><span class="g">VPS_HOST</span>=user@my-vps ./voxtunnel.sh --check
+<span class="g">VPS_HOST</span>=user@my-vps ./voxtunnel.sh</pre>
+  </div>
+</section>
+
+<footer>
+  <span class="rune">V</span>
+  <p>Voxtunnel &middot; SSH-native plumbing for your voice &middot; tested on Debian + KDE Plasma</p>
+  <p><a href="https://github.com/remmmi/voxtunnel">github.com/remmmi/voxtunnel</a></p>
+</footer>
+
+</div>
+<script>
+document.querySelectorAll("[data-copy]").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    var text = document.getElementById(btn.dataset.copy).innerText;
+    navigator.clipboard.writeText(text).then(function () {
+      btn.textContent = "copied";
+      setTimeout(function () { btn.textContent = "copy"; }, 1500);
+    });
+  });
+});
+</script>
+</body>
+</html>

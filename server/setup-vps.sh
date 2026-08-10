@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Prepares a VPS to receive VoicePipe audio: ALSA loopback card (snd-aloop)
+# Prepares a VPS to receive Voxtunnel audio: ALSA loopback card (snd-aloop)
 # plus alsa-utils. Idempotent and non-destructive: it only ADDS the loopback
 # card, it never touches existing audio configuration.
 #

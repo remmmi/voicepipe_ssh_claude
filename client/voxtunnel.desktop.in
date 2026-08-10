@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
-Name=VoicePipe
+Name=Voxtunnel
 GenericName=Mic to VPS
 Comment=Stream the local microphone to a VPS over SSH
-Exec=python3 @DIR@/voicetray.py
-Icon=voicepipe
+Exec=python3 @DIR@/voxtunnel-tray.py
+Icon=voxtunnel
 Terminal=false
 Categories=AudioVideo;Audio;
 StartupNotify=false

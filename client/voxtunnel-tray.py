@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# voicetray.py — petite app tray/fenetre pour piloter voicepipe.sh
+# voxtunnel.py — petite app tray/fenetre pour piloter voxtunnel.sh
 # vers les VPS decouverts dans ~/.ssh/config.
 #
 # - fenetre : un voyant + interrupteur maitre "Transmission", puis une ligne
@@ -15,9 +15,9 @@
 #
 # Decouverte : tous les blocs "Host" de ~/.ssh/config qui declarent un
 # IdentityFile, hors patterns a jokers et hors liste d'exclusion
-# (~/.config/voicepipe/ignore, un host par ligne, github.com exclu d'office).
+# (~/.config/voxtunnel/ignore, un host par ligne, github.com exclu d'office).
 #
-# Chaque stream est un process voicepipe.sh lance dans son propre groupe ;
+# Chaque stream est un process voxtunnel.sh lance dans son propre groupe ;
 # l'arret envoie SIGTERM au groupe entier (arecord | ssh compris).
 # Pas de relance automatique : un stream mort repasse son interrupteur a OFF
 # et affiche l'erreur.
@@ -27,7 +27,7 @@ import signal
 import subprocess
 import sys
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 from PyQt5.QtCore import QLockFile, QObject, QRectF, QSize, Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QColor, QIcon, QPainter, QPixmap
@@ -37,17 +37,17 @@ from PyQt5.QtWidgets import (
 )
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-VOICEPIPE = os.path.join(SCRIPT_DIR, "voicepipe.sh")
+VOICEPIPE = os.path.join(SCRIPT_DIR, "voxtunnel.sh")
 ICON_DIR = os.path.join(SCRIPT_DIR, "icons")
-LOG_DIR = os.path.join(os.path.expanduser("~"), ".cache", "voicepipe")
-IGNORE_FILE = os.path.join(os.path.expanduser("~"), ".config", "voicepipe", "ignore")
+LOG_DIR = os.path.join(os.path.expanduser("~"), ".cache", "voxtunnel")
+IGNORE_FILE = os.path.join(os.path.expanduser("~"), ".config", "voxtunnel", "ignore")
 DEFAULT_IGNORE = {"github.com"}
 
 OFF, STARTING, ON, ERROR = "off", "starting", "on", "error"
 
 GREEN, GRAY, ORANGE, RED = "#4caf50", "#9e9e9e", "#e6a23c", "#f44336"
 
-# tampon ALSA reglable depuis la fenetre (voir l'en-tete de voicepipe.sh)
+# tampon ALSA reglable depuis la fenetre (voir l'en-tete de voxtunnel.sh)
 BUFFER_MIN_MS, BUFFER_DEFAULT_MS, BUFFER_MAX_MS = 40, 80, 300
 
 # Etat de l'ecoute cote VPS. R = pret (carte Loopback en place),
@@ -62,11 +62,15 @@ LISTEN_CMD = ("if [ -d /proc/asound/Loopback ]; then "
 def discover_hosts():
     """Hosts de ~/.ssh/config avec IdentityFile, hors jokers et exclusions."""
     ignore = set(DEFAULT_IGNORE)
-    try:
-        with open(IGNORE_FILE) as f:
-            ignore |= {l.strip() for l in f if l.strip() and not l.startswith("#")}
-    except OSError:
-        pass
+    # l'ancien emplacement (~/.config/voicepipe/ignore) reste lu en repli
+    legacy = os.path.join(os.path.expanduser("~"), ".config", "voicepipe", "ignore")
+    for path in (IGNORE_FILE, legacy):
+        try:
+            with open(path) as f:
+                ignore |= {l.strip() for l in f
+                           if l.strip() and not l.startswith("#")}
+        except OSError:
+            pass
 
     hosts, current, has_key = [], [], False
     try:
@@ -96,7 +100,7 @@ def discover_hosts():
 
 
 class StreamManager(QObject):
-    """Un process voicepipe.sh par host actif, surveille par un timer."""
+    """Un process voxtunnel.sh par host actif, surveille par un timer."""
 
     state_changed = pyqtSignal(str, str, str)  # host, etat, message
 
@@ -342,7 +346,7 @@ class MainWindow(QWidget):
     def __init__(self, hosts, toggle_cb, master_cb, buffer_cb):
         super().__init__()
         self.buffer_cb = buffer_cb
-        self.setWindowTitle("VoicePipe")
+        self.setWindowTitle("Voxtunnel")
         layout = QVBoxLayout(self)
 
         master = QHBoxLayout()
@@ -395,8 +399,8 @@ class MainWindow(QWidget):
         layout.addLayout(buf)
         self._on_slider_changed(self.slider.value())
 
-        link = QLabel('v%s — <a href="https://github.com/remmmi/voicepipe_ssh_claude" '
-                      'style="color: %s;">voicepipe_ssh_claude</a>'
+        link = QLabel('v%s — <a href="https://github.com/remmmi/voxtunnel" '
+                      'style="color: %s;">voxtunnel</a>'
                       % (__version__, GRAY))
         link.setOpenExternalLinks(True)
         link.setAlignment(Qt.AlignRight)
@@ -436,9 +440,9 @@ class VoiceTrayApp:
         self.checker = ListenerChecker(self.hosts)
         self.checker.result.connect(self._on_listener_result)
 
-        self.icon_on = self._load_icon("voicepipe-on.svg")
-        self.icon_idle = self._load_icon("voicepipe-idle.svg")
-        self.icon_off = self._load_icon("voicepipe-off.svg")
+        self.icon_on = self._load_icon("voxtunnel-on.svg")
+        self.icon_idle = self._load_icon("voxtunnel-idle.svg")
+        self.icon_off = self._load_icon("voxtunnel-off.svg")
         self.window.setWindowIcon(self.icon_on)
 
         self.tray = QSystemTrayIcon(self.icon_idle)
@@ -531,7 +535,7 @@ class VoiceTrayApp:
             self.desired.discard(host)
             self.restart_pending.discard(host)
             self._set_host_ui(host, False, "erreur : " + message, RED)
-            self.tray.showMessage("VoicePipe — " + host, message,
+            self.tray.showMessage("Voxtunnel — " + host, message,
                                   QSystemTrayIcon.Warning, 8000)
         else:  # OFF
             if host in self.restart_pending:
@@ -565,14 +569,14 @@ class VoiceTrayApp:
         # couleurs forcees : vert = transmission active, rouge = coupee
         if not self.transmitting:
             self.tray.setIcon(self.icon_off)
-            self.tray.setToolTip("VoicePipe — transmission coupée")
+            self.tray.setToolTip("Voxtunnel — transmission coupée")
         else:
             self.tray.setIcon(self.icon_on)
             if self.manager.procs:
                 self.tray.setToolTip(
-                    "VoicePipe — actif : " + ", ".join(sorted(self.manager.procs)))
+                    "Voxtunnel — actif : " + ", ".join(sorted(self.manager.procs)))
             else:
-                self.tray.setToolTip("VoicePipe — transmission prête, aucun stream")
+                self.tray.setToolTip("Voxtunnel — transmission prête, aucun stream")
 
     def _on_tray_activated(self, reason):
         if reason == QSystemTrayIcon.Trigger:
@@ -593,11 +597,11 @@ class VoiceTrayApp:
 
 
 def reap_orphans():
-    """Tue les pipelines voicepipe.sh survivants d'une instance precedente
+    """Tue les pipelines voxtunnel.sh survivants d'une instance precedente
     (app tuee sans passer par Quitter : les streams vivent dans leurs
     propres sessions et continuent d'emettre)."""
     try:
-        out = subprocess.run(["pgrep", "-f", "voicepipe.sh"],
+        out = subprocess.run(["pgrep", "-f", "voxtunnel.sh"],
                              capture_output=True, text=True).stdout
     except OSError:
         return
@@ -609,20 +613,20 @@ def reap_orphans():
 
 
 def main():
-    lock = QLockFile(os.path.join("/tmp", "voicetray-%d.lock" % os.getuid()))
+    lock = QLockFile(os.path.join("/tmp", "voxtunnel-%d.lock" % os.getuid()))
     lock.setStaleLockTime(0)
     if not lock.tryLock(100):
-        print("voicetray: deja lance", file=sys.stderr)
+        print("voxtunnel: deja lance", file=sys.stderr)
         return 1
 
     # le verrou garantit qu'aucune autre instance ne tourne : tout
-    # voicepipe.sh restant est un orphelin a purger
+    # voxtunnel.sh restant est un orphelin a purger
     reap_orphans()
 
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
     if not QSystemTrayIcon.isSystemTrayAvailable():
-        print("voicetray: pas de zone de notification disponible", file=sys.stderr)
+        print("voxtunnel: pas de zone de notification disponible", file=sys.stderr)
 
     vt = VoiceTrayApp(app)
     vt._show_window()
