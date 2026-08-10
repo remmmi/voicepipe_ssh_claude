@@ -180,22 +180,31 @@ class ListenerChecker(QObject):
 
     result = pyqtSignal(str, bool)  # host, ecoute active
 
-    INTERVAL_MS = 30000
+    SLOW_MS = 30000   # tous les hosts
+    FAST_MS = 3000    # hosts avec un stream actif : l'ecoute distante peut
+                      # s'ouvrir et se fermer vite (mode appui par exemple)
 
     def __init__(self, hosts):
         super().__init__()
         self.hosts = hosts
+        self.active = set()  # hosts a surveiller de pres (streams en cours)
         self.pending = {}  # host -> Popen
         self.collect_timer = QTimer(self)
         self.collect_timer.timeout.connect(self._collect)
         self.collect_timer.start(500)
         self.refresh_timer = QTimer(self)
         self.refresh_timer.timeout.connect(self.refresh)
-        self.refresh_timer.start(self.INTERVAL_MS)
+        self.refresh_timer.start(self.SLOW_MS)
+        self.fast_timer = QTimer(self)
+        self.fast_timer.timeout.connect(lambda: self._launch(self.active))
+        self.fast_timer.start(self.FAST_MS)
         self.refresh()
 
     def refresh(self):
-        for host in self.hosts:
+        self._launch(self.hosts)
+
+    def _launch(self, hosts):
+        for host in hosts:
             if host in self.pending:
                 continue
             try:
@@ -515,6 +524,7 @@ class VoiceTrayApp:
             act.blockSignals(False)
 
     def _update_tray(self):
+        self.checker.active = set(self.manager.procs)
         # couleurs forcees : vert = transmission active, orange = coupee
         if not self.transmitting:
             self.tray.setIcon(self.icon_off)
