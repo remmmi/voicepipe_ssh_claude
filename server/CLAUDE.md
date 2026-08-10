@@ -15,7 +15,12 @@ these rules strictly:
 
 - Inspect before changing: `lsmod | grep snd`, `aplay -l`, and check
   whether an audio stack is already in use by another service.
-- Only run `setup-vps.sh` (idempotent). It installs `alsa-utils` if
+- Preferred on Debian: install the `voicepipe-server` package from the
+  GitHub releases (`sudo apt install ./voicepipe-server_*.deb`). It only
+  pulls `alsa-utils`, loads `snd-aloop` and persists it via
+  `/etc/modules-load.d/voicepipe-snd-aloop.conf`; removal is a clean
+  `apt purge voicepipe-server`.
+- Otherwise run `setup-vps.sh` (idempotent). It installs `alsa-utils` if
   missing, loads `snd-aloop`, and with `--persist` writes a single line to
   `/etc/modules-load.d/snd-aloop.conf`.
 - NEVER edit `/etc/asound.conf`, `~/.asoundrc`, PulseAudio or PipeWire

@@ -54,7 +54,15 @@ password prompts are never shown).
 
 ## Setup
 
-Server, as root on the VPS:
+Server, easiest way — the Debian package from the
+[latest release](https://github.com/remmmi/voicepipe_ssh_claude/releases/latest)
+(loads snd-aloop now and at every boot):
+
+```
+sudo apt install ./voicepipe-server_*.deb
+```
+
+Or with the script, as root on the VPS:
 
 ```
 cd server
@@ -112,16 +120,16 @@ If you hear dropouts (xruns), raise the buffers:
 
 ## Debian package
 
-`./build-deb.sh` builds `voicepipe_<version>_all.deb` (client side:
-`voicetray` command, menu entry, icons; the version comes from
-`voicetray.py`). Install with:
+`./build-deb.sh` builds both packages (version from `voicetray.py`):
 
-```
-sudo apt install ./voicepipe_*.deb
-```
+- `voicepipe_<version>_all.deb` — client: `voicetray` command, menu
+  entry, icons.
+- `voicepipe-server_<version>_all.deb` — server: loads `snd-aloop` at
+  install and at every boot via `/etc/modules-load.d/`.
 
-A prebuilt package is attached to each GitHub release. The user-level
-`client/install.sh` remains the no-root alternative.
+Prebuilt packages are attached to each GitHub release. The user-level
+`client/install.sh` and `server/setup-vps.sh` remain the no-package
+alternatives.
 
 ## Versioning
 

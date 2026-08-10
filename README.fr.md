@@ -56,7 +56,15 @@ L'authentification SSH par cle est obligatoire (les scripts utilisent
 
 ## Installation
 
-Serveur, en root sur le VPS :
+Serveur, au plus simple — le paquet Debian de la
+[derniere release](https://github.com/remmmi/voicepipe_ssh_claude/releases/latest)
+(charge snd-aloop immediatement et a chaque demarrage) :
+
+```
+sudo apt install ./voicepipe-server_*.deb
+```
+
+Ou avec le script, en root sur le VPS :
 
 ```
 cd server
@@ -115,16 +123,17 @@ En cas de micro-coupures (xruns), remontez les tampons :
 
 ## Paquet Debian
 
-`./build-deb.sh` construit `voicepipe_<version>_all.deb` (cote client :
-commande `voicetray`, entree de menu, icones ; la version vient de
-`voicetray.py`). Installation :
+`./build-deb.sh` construit les deux paquets (version lue dans
+`voicetray.py`) :
 
-```
-sudo apt install ./voicepipe_*.deb
-```
+- `voicepipe_<version>_all.deb` — client : commande `voicetray`,
+  entree de menu, icones.
+- `voicepipe-server_<version>_all.deb` — serveur : charge `snd-aloop`
+  a l'installation et a chaque demarrage via `/etc/modules-load.d/`.
 
-Un paquet pret a l'emploi est joint a chaque release GitHub.
-Le `client/install.sh` reste l'alternative sans root.
+Des paquets prets a l'emploi sont joints a chaque release GitHub.
+`client/install.sh` et `server/setup-vps.sh` restent les alternatives
+sans paquet.
 
 ## Versions
 
