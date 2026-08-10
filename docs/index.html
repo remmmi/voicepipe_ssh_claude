@@ -62,7 +62,8 @@ header { padding: 84px 0 40px; text-align: center; }
   color: var(--cream);
   text-transform: uppercase;
   letter-spacing: .08em;
-  text-shadow: 0 0 24px rgba(255,46,196,.5), 0 0 70px rgba(51,181,255,.3);
+  text-shadow: 0 0 24px var(--glow-a, rgba(255,46,196,.5)),
+               0 0 70px var(--glow-b, rgba(51,181,255,.3));
 }
 .tagline { margin-top: 10px; font-size: 1.05rem; color: var(--cream); }
 .tagline-fr { margin-top: 4px; font-size: .85rem; color: var(--text); }
@@ -144,7 +145,8 @@ h2 {
   text-transform: uppercase;
   letter-spacing: .1em;
   color: var(--cream);
-  text-shadow: 0 0 18px rgba(51,181,255,.35);
+  text-shadow: 0 0 24px var(--glow-a, rgba(51,181,255,.45)),
+               0 0 70px var(--glow-b, rgba(255,46,196,.28));
 }
 .fr { color: var(--text); font-size: .82rem; margin: 2px 0 26px; }
 
@@ -321,6 +323,15 @@ voxtunnel
 
 </div>
 <script>
+// halos aleatoires : chaque titre tire deux couleurs vives au chargement
+function neon(alpha) {
+  return "hsla(" + Math.floor(Math.random() * 360) + ",100%,60%," + alpha + ")";
+}
+document.querySelectorAll(".blackletter, h2").forEach(function (el) {
+  el.style.setProperty("--glow-a", neon(.55));
+  el.style.setProperty("--glow-b", neon(.3));
+});
+
 document.querySelectorAll("[data-copy]").forEach(function (btn) {
   btn.addEventListener("click", function () {
     var text = document.getElementById(btn.dataset.copy).innerText;
