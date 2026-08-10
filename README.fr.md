@@ -63,7 +63,15 @@ cd server
 ./setup-vps.sh --persist
 ```
 
-Client :
+Client, au plus simple — recuperez le paquet Debian de la
+[derniere release](https://github.com/remmmi/voicepipe_ssh_claude/releases/latest) :
+
+```
+sudo apt install ./voicepipe_*.deb
+voicetray
+```
+
+Ou depuis les sources, sans root :
 
 ```
 cd client
