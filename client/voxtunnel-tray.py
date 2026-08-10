@@ -424,12 +424,11 @@ class HostRow(QWidget):
         layout.setContentsMargins(8, 2, 8, 2)
         self.dot = StatusDot()
         layout.addWidget(self.dot)
-        name = QLabel(host)
-        name.setMinimumWidth(160)
+        self.name = QLabel(host)
         self.switch = ToggleSwitch()
         self.status = QLabel("inactif")
         self.status.setStyleSheet("color: %s;" % GRAY)
-        layout.addWidget(name)
+        layout.addWidget(self.name)
         layout.addWidget(self.switch)
         layout.addWidget(self.status, 1)
         self.switch.toggled.connect(lambda on: toggle_cb(host, on))
@@ -477,6 +476,13 @@ class MainWindow(QWidget):
             row = HostRow(host, toggle_cb)
             self.rows[host] = row
             layout.addWidget(row)
+        if hosts:
+            # colonne des noms calee sur le plus long : les interrupteurs
+            # restent alignes quelle que soit la longueur des noms
+            fm = self.fontMetrics()
+            name_w = max(160, max(fm.boundingRect(h).width() for h in hosts) + 12)
+            for row in self.rows.values():
+                row.name.setFixedWidth(name_w)
         layout.addStretch(1)
 
         # slider du tampon ALSA, en bas : plus haut = moins de coupures,
