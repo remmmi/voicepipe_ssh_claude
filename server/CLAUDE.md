@@ -1,0 +1,47 @@
+# VoicePipe — server (VPS)
+
+This folder is the REMOTE side of VoicePipe. The server receives raw PCM
+audio over SSH and plays it into an ALSA loopback card (`snd-aloop`), where
+any local program (speech-to-text, a voice assistant, Claude Code voice
+input, ...) can record it as if a real microphone were plugged in.
+
+The client writes to `plughw:Loopback,0,0`; programs on the VPS record
+from `plughw:Loopback,1,0`.
+
+## Installing WITHOUT breaking the VPS
+
+The whole setup is additive: one kernel module and one package. Follow
+these rules strictly:
+
+- Inspect before changing: `lsmod | grep snd`, `aplay -l`, and check
+  whether an audio stack is already in use by another service.
+- Only run `setup-vps.sh` (idempotent). It installs `alsa-utils` if
+  missing, loads `snd-aloop`, and with `--persist` writes a single line to
+  `/etc/modules-load.d/snd-aloop.conf`.
+- NEVER edit `/etc/asound.conf`, `~/.asoundrc`, PulseAudio or PipeWire
+  configuration, and never uninstall or reconfigure existing audio
+  packages. VoicePipe does not need any of that.
+- No reboot is required. Do not reboot a production VPS for this.
+- The SSH user needs permission to open audio devices: on most distros
+  that means being in the `audio` group (`usermod -aG audio <user>`), only
+  if `aplay` fails with a permission error. Do not change anything else
+  about the user.
+
+## Verify
+
+```
+aplay -l | grep Loopback                       # card is visible
+arecord -D plughw:Loopback,1,0 -f S16_LE -c1 -r48000 -d 3 /tmp/test.wav
+```
+
+Then from the client: `VPS_HOST=user@this-vps ./voicepipe.sh --check`
+(and `--tone` to send a 5 s test tone while the arecord above runs).
+
+## Rollback
+
+```
+rmmod snd-aloop                                # unload for this boot
+rm -f /etc/modules-load.d/snd-aloop.conf       # remove persistence
+```
+
+Nothing else was changed.

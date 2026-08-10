@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=VoicePipe
+GenericName=Mic to VPS
+Comment=Stream the local microphone to a VPS over SSH
+Exec=python3 @DIR@/voicetray.py
+Icon=@DIR@/icons/voicepipe-on.svg
+Terminal=false
+Categories=AudioVideo;Audio;Network;
+StartupNotify=false

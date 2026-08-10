@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+#
+# voicepipe.sh — streame le micro de la machine locale vers la carte son
+# virtuelle (snd-aloop) d'un VPS distant, via SSH.
+#
+# A LANCER SUR LA MACHINE LOCALE (celle qui a le micro), pas sur le VPS.
+#
+#   ./voicepipe.sh --check          verifie les deux bouts, ne streame pas
+#   ./voicepipe.sh                  streame jusqu'a Ctrl-C
+#   ./voicepipe.sh --tone           envoie un ton de test au lieu du micro
+#
+# Config par variables d'environnement :
+#   VPS_HOST   user@host SSH               (obligatoire)
+#   MIC        peripherique de capture     (defaut: default)
+#   RATE       frequence d'echantillonnage (defaut: 48000)
+#   BUFFER_US  tampon ALSA en us           (defaut: 80000)
+#   PERIOD_US  periode ALSA en us          (defaut: 20000)
+#
+# Exemple :
+#   VPS_HOST=user@my-vps ./voicepipe.sh
+#
+# Si tu entends des micro-coupures (xruns), remonte les tampons :
+#   BUFFER_US=200000 PERIOD_US=50000 VPS_HOST=... ./voicepipe.sh
+#
+# Pas de relance automatique : si le pipe meurt, tu relances a la main.
+# Une boucle de retry sans garde TTY dans un fichier de demarrage shell
+# fabrique des shells orphelins qui respawnent en boucle.
+
+set -euo pipefail
+
+VPS_HOST="${VPS_HOST:-}"
+MIC="${MIC:-default}"
+RATE="${RATE:-48000}"
+
+# Tampons ALSA, en microsecondes, appliques aux deux bouts.
+# Les defauts d'ALSA (~500 ms) visent la lecture de musique : ils ajoutent
+# une demi-seconde de latence a chaque extremite. 80/20 ms donne environ
+# 150-200 ms bout en bout. Descendre plus bas provoque des xruns
+# (micro-coupures), qui degradent la transcription bien plus qu'un delai.
+BUFFER_US="${BUFFER_US:-80000}"
+PERIOD_US="${PERIOD_US:-20000}"
+
+# Face playback du loopback cote VPS. Le prefixe plug: est obligatoire —
+# snd-aloop ne resample pas tout seul, et le recorder distant ne demandera
+# pas forcement la meme frequence que celle envoyee ici.
+REMOTE_SINK="plughw:Loopback,0,0"
+
+MODE="stream"
+case "${1:-}" in
+  --check) MODE="check" ;;
+  --tone)  MODE="tone" ;;
+  --help|-h)
+    sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'
+    exit 0 ;;
+  "") ;;
+  *) echo "argument inconnu: $1 (voir --help)" >&2; exit 2 ;;
+esac
+
+die() { echo "voicepipe: $*" >&2; exit 1; }
+
+[ -n "$VPS_HOST" ] || die "VPS_HOST n'est pas defini. Ex: VPS_HOST=user@ip $0"
+
+# --- Choix de l'enregistreur local -----------------------------------------
+# Les deux sortent du PCM brut signe 16 bits little-endian, mono.
+if command -v arecord >/dev/null 2>&1; then
+  RECORDER="arecord"
+  record_cmd() {
+    arecord -D "$MIC" -f S16_LE -c 1 -r "$RATE" -t raw -q \
+            --buffer-time="$BUFFER_US" --period-time="$PERIOD_US"
+  }
+elif command -v ffmpeg >/dev/null 2>&1; then
+  RECORDER="ffmpeg (pulse)"
+  # fragment_size est en octets : RATE * periode * 2 octets par echantillon.
+  FRAG=$(( RATE * PERIOD_US / 1000000 * 2 ))
+  record_cmd() {
+    ffmpeg -hide_banner -loglevel error \
+           -f pulse -fragment_size "$FRAG" -i "$MIC" \
+           -f s16le -ar "$RATE" -ac 1 - ;
+  }
+else
+  die "aucun enregistreur trouve. Installe alsa-utils (arecord) ou ffmpeg."
+fi
+
+ssh_vps() { ssh -o BatchMode=yes -o ConnectTimeout=10 "$VPS_HOST" "$@"; }
+
+# Lecture distante vers la face playback du loopback. Compression desactivee :
+# le PCM brut ne se comprime pas, gzip ne ferait qu'ajouter du delai.
+remote_play() {
+  ssh -o BatchMode=yes -o ConnectTimeout=10 -o Compression=no -o IPQoS=lowdelay \
+      "$VPS_HOST" \
+      "aplay -D $REMOTE_SINK -f S16_LE -c 1 -r $RATE -t raw -q \
+             --buffer-time=$BUFFER_US --period-time=$PERIOD_US"
+}
+
+# --- Preflight --------------------------------------------------------------
+preflight() {
+  echo "  enregistreur local : $RECORDER   (micro: $MIC, ${RATE} Hz)"
+
+  ssh_vps true 2>/dev/null \
+    || die "SSH vers $VPS_HOST impossible (BatchMode: il faut une cle, pas un mot de passe)."
+  echo "  ssh $VPS_HOST      : ok"
+
+  ssh_vps 'command -v aplay >/dev/null' \
+    || die "aplay absent du VPS. Sur le VPS : sudo apt install alsa-utils"
+  echo "  aplay distant      : ok"
+
+  ssh_vps 'aplay -l 2>/dev/null | grep -q Loopback' \
+    || die "carte Loopback absente du VPS. Sur le VPS : sudo modprobe snd-aloop"
+  echo "  carte Loopback     : ok"
+}
+
+case "$MODE" in
+  check)
+    echo "voicepipe — verification"
+    preflight
+    echo
+    echo "Les deux bouts repondent. Lance sans --check pour streamer."
+    ;;
+
+  tone)
+    echo "voicepipe — ton de test (1 kHz, 5 s) vers $VPS_HOST"
+    preflight
+    echo
+    echo "Sur le VPS, en parallele :"
+    echo "  arecord -D plughw:Loopback,1,0 -f S16_LE -c1 -r$RATE -d 5 /tmp/loop.wav"
+    echo
+    command -v sox >/dev/null 2>&1 \
+      || die "sox absent en local (necessaire pour --tone). Utilise --check a la place."
+    sox -n -t raw -r "$RATE" -e signed -b 16 -c 1 - synth 5 sine 1000 vol 0.3 \
+      | remote_play
+    echo "Ton envoye."
+    ;;
+
+  stream)
+    echo "voicepipe — micro local vers $VPS_HOST"
+    preflight
+    echo
+    echo "Streaming (tampon ${BUFFER_US}us, periode ${PERIOD_US}us). Ctrl-C pour couper."
+    echo "Marque un temps apres avoir declenche /voice : le tuyau contient"
+    echo "deja ~0,2 s d'audio, sinon tu perds ta premiere syllabe."
+    record_cmd | remote_play
+    ;;
+esac
