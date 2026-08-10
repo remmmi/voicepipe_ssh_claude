@@ -61,7 +61,8 @@ Server — Debian package from the
 sudo apt install ./voxtunnel-server_*.deb
 ```
 
-or with the script, as root: `cd server && ./setup-vps.sh --persist`
+or with the script, as root:
+`git clone https://github.com/remmmi/voxtunnel.git && sudo voxtunnel/server/setup-vps.sh --persist`
 
 Client — Debian package, then run `voxtunnel`:
 
@@ -72,7 +73,8 @@ sudo apt install ./voxtunnel_*.deb
 or from source, without root:
 
 ```
-cd client
+git clone https://github.com/remmmi/voxtunnel.git
+cd voxtunnel/client
 ./voxtunnel.sh --check    # VPS_HOST=user@my-vps ./voxtunnel.sh --check
 ./install.sh              # menu launcher; --autostart for session start
 python3 voxtunnel-tray.py
@@ -147,7 +149,8 @@ Serveur — paquet Debian de la
 sudo apt install ./voxtunnel-server_*.deb
 ```
 
-ou avec le script, en root : `cd server && ./setup-vps.sh --persist`
+ou avec le script, en root :
+`git clone https://github.com/remmmi/voxtunnel.git && sudo voxtunnel/server/setup-vps.sh --persist`
 
 Client — paquet Debian, puis lancez `voxtunnel` :
 
@@ -158,7 +161,8 @@ sudo apt install ./voxtunnel_*.deb
 ou depuis les sources, sans root :
 
 ```
-cd client
+git clone https://github.com/remmmi/voxtunnel.git
+cd voxtunnel/client
 ./voxtunnel.sh --check    # VPS_HOST=user@mon-vps ./voxtunnel.sh --check
 ./install.sh              # lanceur de menu ; --autostart pour le demarrage
 python3 voxtunnel-tray.py

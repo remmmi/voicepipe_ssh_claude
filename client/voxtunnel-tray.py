@@ -388,12 +388,12 @@ class MainWindow(QWidget):
         self.slider.setSingleStep(10)
         self.slider.setPageStep(20)
         self.slider.setToolTip(
-            "Tampon audio : plus haut = moins de micro-coupures,\n"
+            "Buffer audio : plus haut = moins de micro-coupures,\n"
             "plus de latence. Les streams en cours sont relancés.")
         self.slider.valueChanged.connect(self._on_slider_changed)
         self.slider.sliderReleased.connect(
             lambda: self.buffer_cb(self.slider.value()))
-        buf.addWidget(QLabel("Tampon"))
+        buf.addWidget(QLabel("Buffer"))
         buf.addWidget(self.slider, 1)
         buf.addWidget(self.buffer_label)
         layout.addLayout(buf)
