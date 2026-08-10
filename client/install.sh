@@ -10,8 +10,15 @@ chmod +x "$DIR/voicetray.py" "$DIR/voicepipe.sh"
 APPS="$HOME/.local/share/applications"
 mkdir -p "$APPS"
 sed "s|@DIR@|$DIR|g" "$DIR/voicepipe-tray.desktop.in" > "$APPS/voicepipe-tray.desktop"
+
+# named icon so the launcher shows up properly in the Multimedia menu
+ICONS="$HOME/.local/share/icons/hicolor/scalable/apps"
+mkdir -p "$ICONS"
+cp "$DIR/icons/voicepipe-on.svg" "$ICONS/voicepipe.svg"
+
 command -v update-desktop-database >/dev/null && update-desktop-database "$APPS" || true
-echo "Launcher installed in $APPS"
+command -v kbuildsycoca5 >/dev/null && kbuildsycoca5 --noincremental >/dev/null 2>&1 || true
+echo "Launcher and icon installed for the current user"
 
 if [ "${1:-}" = "--autostart" ]; then
   mkdir -p "$HOME/.config/autostart"

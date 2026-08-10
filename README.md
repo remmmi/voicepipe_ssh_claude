@@ -102,6 +102,12 @@ VPS_HOST=user@my-vps ./voicepipe.sh --tone    # 1 kHz test tone
 If you hear dropouts (xruns), raise the buffers:
 `BUFFER_US=200000 PERIOD_US=50000`.
 
+## Versioning
+
+Single source of truth: `__version__` in `client/voicetray.py` (shown at
+the bottom of the window). Each release gets a matching git tag
+(`v1.0.0`, ...).
+
 ## Tested on
 
 - Client: Debian with KDE Plasma.

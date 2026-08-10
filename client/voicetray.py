@@ -27,6 +27,8 @@ import signal
 import subprocess
 import sys
 
+__version__ = "1.0.0"
+
 from PyQt5.QtCore import QLockFile, QObject, QRectF, QSize, Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QColor, QIcon, QPainter, QPixmap
 from PyQt5.QtWidgets import (
@@ -392,6 +394,14 @@ class MainWindow(QWidget):
         buf.addWidget(self.buffer_label)
         layout.addLayout(buf)
         self._on_slider_changed(self.slider.value())
+
+        link = QLabel('v%s — <a href="https://github.com/remmmi/voicepipe_ssh_claude" '
+                      'style="color: %s;">voicepipe_ssh_claude</a>'
+                      % (__version__, GRAY))
+        link.setOpenExternalLinks(True)
+        link.setAlignment(Qt.AlignRight)
+        link.setStyleSheet("font-size: 10px; margin-right: 8px;")
+        layout.addWidget(link)
 
     def _on_slider_changed(self, value):
         self.buffer_label.setText("%d ms" % value)

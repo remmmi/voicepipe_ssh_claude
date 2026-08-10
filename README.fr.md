@@ -105,6 +105,12 @@ VPS_HOST=user@mon-vps ./voicepipe.sh --tone    # ton de test 1 kHz
 En cas de micro-coupures (xruns), remontez les tampons :
 `BUFFER_US=200000 PERIOD_US=50000`.
 
+## Versions
+
+Source unique : `__version__` dans `client/voicetray.py` (affichee en
+bas de la fenetre). Chaque release recoit un tag git correspondant
+(`v1.0.0`, ...).
+
 ## Teste sur
 
 - Client : Debian avec KDE Plasma.
