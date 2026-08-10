@@ -102,6 +102,19 @@ VPS_HOST=user@my-vps ./voicepipe.sh --tone    # 1 kHz test tone
 If you hear dropouts (xruns), raise the buffers:
 `BUFFER_US=200000 PERIOD_US=50000`.
 
+## Debian package
+
+`./build-deb.sh` builds `voicepipe_<version>_all.deb` (client side:
+`voicetray` command, menu entry, icons; the version comes from
+`voicetray.py`). Install with:
+
+```
+sudo apt install ./voicepipe_*.deb
+```
+
+A prebuilt package is attached to each GitHub release. The user-level
+`client/install.sh` remains the no-root alternative.
+
 ## Versioning
 
 Single source of truth: `__version__` in `client/voicetray.py` (shown at

@@ -105,6 +105,19 @@ VPS_HOST=user@mon-vps ./voicepipe.sh --tone    # ton de test 1 kHz
 En cas de micro-coupures (xruns), remontez les tampons :
 `BUFFER_US=200000 PERIOD_US=50000`.
 
+## Paquet Debian
+
+`./build-deb.sh` construit `voicepipe_<version>_all.deb` (cote client :
+commande `voicetray`, entree de menu, icones ; la version vient de
+`voicetray.py`). Installation :
+
+```
+sudo apt install ./voicepipe_*.deb
+```
+
+Un paquet pret a l'emploi est joint a chaque release GitHub.
+Le `client/install.sh` reste l'alternative sans root.
+
 ## Versions
 
 Source unique : `__version__` dans `client/voicetray.py` (affichee en
