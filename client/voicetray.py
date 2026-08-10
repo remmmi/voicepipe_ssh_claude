@@ -416,12 +416,32 @@ class VoiceTrayApp:
         QTimer.singleShot(1000, self.app.quit)
 
 
+def reap_orphans():
+    """Tue les pipelines voicepipe.sh survivants d'une instance precedente
+    (app tuee sans passer par Quitter : les streams vivent dans leurs
+    propres sessions et continuent d'emettre)."""
+    try:
+        out = subprocess.run(["pgrep", "-f", "voicepipe.sh"],
+                             capture_output=True, text=True).stdout
+    except OSError:
+        return
+    for token in out.split():
+        try:
+            os.killpg(os.getpgid(int(token)), signal.SIGTERM)
+        except (ValueError, ProcessLookupError, PermissionError):
+            pass
+
+
 def main():
     lock = QLockFile(os.path.join("/tmp", "voicetray-%d.lock" % os.getuid()))
     lock.setStaleLockTime(0)
     if not lock.tryLock(100):
         print("voicetray: deja lance", file=sys.stderr)
         return 1
+
+    # le verrou garantit qu'aucune autre instance ne tourne : tout
+    # voicepipe.sh restant est un orphelin a purger
+    reap_orphans()
 
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
