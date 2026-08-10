@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Voxtunnel — your voice, tunneled straight to your servers</title>
-<meta name="description" content="Stream your local microphone over SSH to the virtual sound card of any of your servers. No cloud relay, no account. Just your SSH keys and ALSA.">
+<title>Voxtunnel — votre voix, en tunnel direct vers vos serveurs</title>
+<meta name="description" content="Streamez votre micro local via SSH vers la carte son virtuelle de n'importe lequel de vos serveurs. Pas de relais cloud, pas de compte. Juste vos clés SSH et ALSA.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
@@ -275,127 +275,129 @@ a { color: var(--blue); }
 </style>
 </head>
 <body>
-<a class="lang" href="fr/" title="Version française" aria-label="Version française" lang="fr">
+<a class="lang" href="../" title="English version" aria-label="English version" lang="en">
 <svg viewBox="0 0 30 20" xmlns="http://www.w3.org/2000/svg" role="img">
-  <rect width="10" height="20" fill="#33b5ff"/>
-  <rect x="10" width="10" height="20" fill="#f7f0dc"/>
-  <rect x="20" width="10" height="20" fill="#ff2ec4"/>
+  <rect width="30" height="20" fill="#33b5ff"/>
+  <path d="M0 0 L30 20 M30 0 L0 20" stroke="#f7f0dc" stroke-width="4"/>
+  <path d="M15 0 V20" stroke="#f7f0dc" stroke-width="7"/>
+  <path d="M0 10 H30" stroke="#f7f0dc" stroke-width="6"/>
+  <path d="M15 0 V20 M0 10 H30" stroke="#ff2ec4" stroke-width="3"/>
 </svg></a>
 <div class="wrap">
 
 <header>
   <h1 class="blackletter">Voxtunnel</h1>
-  <p class="tagline">Your voice, tunneled straight to your servers.</p>
+  <p class="tagline">Votre voix, en tunnel direct vers vos serveurs.</p>
   <div class="cta">
-    <a class="btn" href="https://github.com/remmmi/voxtunnel/releases/latest">Download .deb</a>
-    <a class="btn ghost" href="https://github.com/remmmi/voxtunnel">Source on GitHub</a>
+    <a class="btn" href="https://github.com/remmmi/voxtunnel/releases/latest">Télécharger le .deb</a>
+    <a class="btn ghost" href="https://github.com/remmmi/voxtunnel">Source sur GitHub</a>
   </div>
 
-  <div class="tunnel" aria-label="Diagram: microphone audio flowing through an SSH tunnel to a server">
+  <div class="tunnel" aria-label="Schéma : l'audio du micro traverse un tunnel SSH vers un serveur">
     <div class="tunnel-bar">
       <span class="dot live"></span><span class="dot"></span><span class="dot"></span>
-      <span style="margin-left:8px">transmission — live</span>
+      <span style="margin-left:8px">transmission — en direct</span>
     </div>
     <div class="tunnel-body"><b>MIC</b>&nbsp;<span class="wavebox"><span class="wave">)&nbsp;))&nbsp;)))&nbsp;)&nbsp;))&nbsp;)))&nbsp;)</span></span><span class="gate">═╣</span><b>ssh</b><span class="gate">╠═</span><span class="wavebox"><span class="wave">)&nbsp;))&nbsp;)))&nbsp;)&nbsp;))&nbsp;)))&nbsp;)</span></span><b>SRV</b></div>
-    <div class="tunnel-caption">raw PCM &middot; <em>~150 ms</em> end to end &middot; your keys, your machines, nothing in between</div>
+    <div class="tunnel-caption">PCM brut &middot; <em>~150 ms</em> de bout en bout &middot; vos clés, vos machines, rien entre les deux</div>
   </div>
 </header>
 
 <section id="window">
-  <h2>The control room</h2>
+  <h2>La salle de contrôle</h2>
   <div class="appshot">
     <div class="tunnel-bar">
       <span class="dot live"></span><span class="dot"></span><span class="dot"></span>
       <span style="margin-left:8px">Voxtunnel</span>
     </div>
-    <img src="voxtunnel-window.png" width="560" height="560" id="shot"
-         tabindex="0" role="button" aria-label="Zoom the screenshot"
-         alt="Voxtunnel window: a green Transmission master toggle, one row per server with a green or red monitor glyph, a toggle switch and its status, and a buffer slider set to 80 ms">
+    <img src="../voxtunnel-window.png" width="560" height="560" id="shot"
+         tabindex="0" role="button" aria-label="Agrandir la capture"
+         alt="Fenêtre Voxtunnel : un interrupteur maître Transmission vert, une ligne par serveur avec un petit écran vert ou rouge, un interrupteur et son statut, et un slider de buffer à 80 ms">
   </div>
 </section>
 
 <section id="features">
-  <h2>The switchboard</h2>
+  <h2>Le tableau d'interrupteurs</h2>
   <div class="board">
     <div class="row">
       <span class="toggle" aria-hidden="true"></span>
       <div>
-        <h3>Your SSH config is the setup</h3>
-        <p>Voxtunnel reads <b>~/.ssh/config</b> and gives every host with a key its own switch. Nothing to declare, nothing to duplicate.</p>
+        <h3>Votre config SSH est le setup</h3>
+        <p>Voxtunnel lit <b>~/.ssh/config</b> et donne un interrupteur à chaque host qui a une clé. Rien à déclarer, rien à dupliquer.</p>
       </div>
     </div>
     <div class="row">
       <span class="toggle" aria-hidden="true"></span>
       <div>
-        <h3>One master Transmission toggle</h3>
-        <p>Cut every stream in one click without losing your per-host selection. Flip it back: the streams whose switch is <b>ON</b> return.</p>
+        <h3>Un interrupteur maître Transmission</h3>
+        <p>Coupez tous les streams d'un clic sans perdre votre sélection par host. Rétablissez : les streams dont l'interrupteur est <b>ON</b> reviennent.</p>
       </div>
     </div>
     <div class="row">
       <span class="toggle" aria-hidden="true"></span>
       <div>
-        <h3>Lives in your system tray</h3>
-        <p>The window is optional: the tray icon carries the <b>same switches</b> in its menu. Green icon while transmission is on, red crossed icon when the line is cut.</p>
+        <h3>Vit dans votre barre système</h3>
+        <p>La fenêtre est optionnelle : l'icône du tray porte les <b>mêmes interrupteurs</b> dans son menu. Icône verte quand la transmission est active, rouge barrée quand la ligne est coupée.</p>
       </div>
     </div>
     <div class="row">
       <span class="toggle" aria-hidden="true"></span>
       <div>
-        <h3>The server hears a real microphone</h3>
-        <p>Audio lands in the <b>snd-aloop</b> loopback card. Speech-to-text, voice assistants or Claude Code voice input record it like local hardware.</p>
+        <h3>Le serveur entend un vrai micro</h3>
+        <p>L'audio atterrit dans la carte loopback <b>snd-aloop</b>. Transcription vocale, assistants ou saisie vocale de Claude Code l'enregistrent comme du matériel local.</p>
       </div>
     </div>
     <div class="row">
       <span class="toggle" aria-hidden="true"></span>
       <div>
-        <h3>Honest lights, no magic retry</h3>
-        <p>A monitor glyph per host shows if the far end is ready. A dead stream flips its own switch off and tells you why. Latency is a slider, not a mystery.</p>
+        <h3>Des voyants honnêtes, pas de retry magique</h3>
+        <p>Un petit écran par host indique si le bout distant est prêt. Un stream mort repasse son interrupteur à OFF et vous dit pourquoi. La latence est un slider, pas un mystère.</p>
       </div>
     </div>
   </div>
 </section>
 
 <section id="install">
-  <h2>Summon it</h2>
+  <h2>Invoquez-le</h2>
 
   <div class="term">
-    <div class="term-head"><span>server (VPS)</span><button data-copy="srv">copy</button></div>
-    <pre id="srv"><span class="c"># from github.com/remmmi/voxtunnel/releases/latest</span>
+    <div class="term-head"><span>serveur (VPS)</span><button data-copy="srv">copier</button></div>
+    <pre id="srv"><span class="c"># depuis github.com/remmmi/voxtunnel/releases/latest</span>
 <span class="g">sudo</span> apt install ./voxtunnel-server_*.deb
-<span class="c"># loads snd-aloop now and at every boot - purely additive</span></pre>
+<span class="c"># charge snd-aloop maintenant et à chaque démarrage - purement additif</span></pre>
   </div>
 
   <div class="term">
-    <div class="term-head"><span>client (your desktop)</span><button data-copy="cli">copy</button></div>
+    <div class="term-head"><span>client (votre bureau)</span><button data-copy="cli">copier</button></div>
     <pre id="cli"><span class="g">sudo</span> apt install ./voxtunnel_*.deb
 voxtunnel</pre>
   </div>
 
   <div class="term">
-    <div class="term-head"><span>from source (no root)</span><button data-copy="src">copy</button></div>
+    <div class="term-head"><span>depuis les sources (sans root)</span><button data-copy="src">copier</button></div>
     <pre id="src"><span class="g">git</span> clone https://github.com/remmmi/voxtunnel.git
 <span class="g">cd</span> voxtunnel/client
-./install.sh          <span class="c"># menu launcher; --autostart for session start</span>
+./install.sh          <span class="c"># lanceur de menu ; --autostart pour le démarrage de session</span>
 python3 voxtunnel-tray.py
-<span class="c"># server side from the same clone, as root on the VPS:</span>
+<span class="c"># côté serveur depuis le même clone, en root sur le VPS :</span>
 <span class="c">#   sudo ../server/setup-vps.sh --persist</span></pre>
   </div>
 
   <div class="term">
-    <div class="term-head"><span>no GUI needed</span><button data-copy="cli2">copy</button></div>
-    <pre id="cli2"><span class="g">VPS_HOST</span>=user@my-vps ./voxtunnel.sh --check
-<span class="g">VPS_HOST</span>=user@my-vps ./voxtunnel.sh</pre>
+    <div class="term-head"><span>sans interface graphique</span><button data-copy="cli2">copier</button></div>
+    <pre id="cli2"><span class="g">VPS_HOST</span>=user@mon-vps ./voxtunnel.sh --check
+<span class="g">VPS_HOST</span>=user@mon-vps ./voxtunnel.sh</pre>
   </div>
 </section>
 
 <footer>
-  <p>Voxtunnel v1.1.0 &middot; site css v6 &middot; SSH-native plumbing for your voice &middot; tested on Debian + KDE Plasma</p>
-  <p><a href="https://github.com/remmmi/voxtunnel">github.com/remmmi/voxtunnel</a></p>
+  <p>Voxtunnel v1.1.0 &middot; site css v6 &middot; plomberie SSH pour votre voix &middot; testé sur Debian + KDE Plasma</p>
+  <p><a href="https://github.com/remmmi/voxtunnel">github.com/remmmi/voxtunnel</a> &middot; <a href="../">English version</a></p>
 </footer>
 
 </div>
 <div class="lightbox" id="lightbox" aria-hidden="true">
-  <img src="voxtunnel-window.png" alt="">
+  <img src="../voxtunnel-window.png" alt="">
 </div>
 
 <script>
@@ -428,8 +430,8 @@ document.querySelectorAll("[data-copy]").forEach(function (btn) {
   btn.addEventListener("click", function () {
     var text = document.getElementById(btn.dataset.copy).innerText;
     navigator.clipboard.writeText(text).then(function () {
-      btn.textContent = "copied";
-      setTimeout(function () { btn.textContent = "copy"; }, 1500);
+      btn.textContent = "copié";
+      setTimeout(function () { btn.textContent = "copier"; }, 1500);
     });
   });
 });
