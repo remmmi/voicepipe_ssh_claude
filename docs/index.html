@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
-/* voxtunnel site css v4 — orbitron, neon rose/jaune/bleu, blanc/creme, grain */
+/* voxtunnel site css v5 — orbitron, neon rose/jaune/bleu, blanc/creme, grain, lightbox */
 :root {
   --bg: #0a0a0c;
   --bg-raised: #121216;
@@ -189,7 +189,23 @@ h2 {
   background: var(--bg-raised);
   box-shadow: 0 0 40px rgba(255,46,196,.14), 0 0 90px rgba(51,181,255,.1);
 }
-.appshot img { display: block; width: 100%; height: auto; padding: 16px; }
+.appshot img { display: block; width: 100%; height: auto; padding: 16px; cursor: zoom-in; }
+
+/* lightbox de zoom */
+.lightbox {
+  position: fixed; inset: 0; z-index: 10;
+  background: rgba(6,6,8,.93);
+  display: none;
+  align-items: center; justify-content: center;
+  cursor: zoom-out;
+}
+.lightbox.open { display: flex; }
+.lightbox img {
+  max-width: min(92vw, 980px);
+  max-height: 92vh;
+  border: 1px solid var(--frame);
+  box-shadow: 0 0 60px rgba(255,46,196,.25), 0 0 140px rgba(51,181,255,.15);
+}
 
 /* install */
 .term {
@@ -264,6 +280,19 @@ a { color: var(--blue); }
   </div>
 </header>
 
+<section id="window">
+  <h2>The control room</h2>
+  <div class="appshot">
+    <div class="tunnel-bar">
+      <span class="dot live"></span><span class="dot"></span><span class="dot"></span>
+      <span style="margin-left:8px">Voxtunnel</span>
+    </div>
+    <img src="voxtunnel-window.png" width="560" height="560" id="shot"
+         tabindex="0" role="button" aria-label="Zoom the screenshot"
+         alt="Voxtunnel window: a green Transmission master toggle, one row per server with a green or red monitor glyph, a toggle switch and its status, and a buffer slider set to 80 ms">
+  </div>
+</section>
+
 <section id="features">
   <h2>The switchboard</h2>
   <div class="board">
@@ -284,6 +313,13 @@ a { color: var(--blue); }
     <div class="row">
       <span class="toggle" aria-hidden="true"></span>
       <div>
+        <h3>Lives in your system tray</h3>
+        <p>The window is optional: the tray icon carries the <b>same switches</b> in its menu. Green icon while transmission is on, red crossed icon when the line is cut.</p>
+      </div>
+    </div>
+    <div class="row">
+      <span class="toggle" aria-hidden="true"></span>
+      <div>
         <h3>The server hears a real microphone</h3>
         <p>Audio lands in the <b>snd-aloop</b> loopback card. Speech-to-text, voice assistants or Claude Code voice input record it like local hardware.</p>
       </div>
@@ -295,18 +331,6 @@ a { color: var(--blue); }
         <p>A monitor glyph per host shows if the far end is ready. A dead stream flips its own switch off and tells you why. Latency is a slider, not a mystery.</p>
       </div>
     </div>
-  </div>
-</section>
-
-<section id="window">
-  <h2>The control room</h2>
-  <div class="appshot">
-    <div class="tunnel-bar">
-      <span class="dot live"></span><span class="dot"></span><span class="dot"></span>
-      <span style="margin-left:8px">Voxtunnel</span>
-    </div>
-    <img src="voxtunnel-window.png" width="560" height="560"
-         alt="Voxtunnel window: a green Transmission master toggle, one row per server with a green or red monitor glyph, a toggle switch and its status, and a buffer slider set to 80 ms">
   </div>
 </section>
 
@@ -344,12 +368,32 @@ python3 voxtunnel-tray.py
 </section>
 
 <footer>
-  <p>Voxtunnel v1.1.0 &middot; site css v4 &middot; SSH-native plumbing for your voice &middot; tested on Debian + KDE Plasma</p>
+  <p>Voxtunnel v1.1.0 &middot; site css v5 &middot; SSH-native plumbing for your voice &middot; tested on Debian + KDE Plasma</p>
   <p><a href="https://github.com/remmmi/voxtunnel">github.com/remmmi/voxtunnel</a></p>
 </footer>
 
 </div>
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <img src="voxtunnel-window.png" alt="">
+</div>
+
 <script>
+// zoom de la capture : clic ou Entree pour ouvrir, clic ou Echap pour fermer
+(function () {
+  var shot = document.getElementById("shot");
+  var box = document.getElementById("lightbox");
+  function open() { box.classList.add("open"); box.setAttribute("aria-hidden", "false"); }
+  function close() { box.classList.remove("open"); box.setAttribute("aria-hidden", "true"); }
+  shot.addEventListener("click", open);
+  shot.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); }
+  });
+  box.addEventListener("click", close);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") close();
+  });
+})();
+
 // halos aleatoires : chaque titre tire deux couleurs vives au chargement
 function neon(alpha) {
   return "hsla(" + Math.floor(Math.random() * 360) + ",100%,60%," + alpha + ")";
