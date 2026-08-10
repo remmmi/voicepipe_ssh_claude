@@ -30,7 +30,7 @@ import sys
 from PyQt5.QtCore import QLockFile, QObject, QRectF, QSize, Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QColor, QIcon, QPainter
 from PyQt5.QtWidgets import (
-    QApplication, QCheckBox, QFrame, QHBoxLayout, QLabel, QMenu,
+    QApplication, QCheckBox, QFrame, QHBoxLayout, QLabel, QMenu, QSlider,
     QSystemTrayIcon, QVBoxLayout, QWidget,
 )
 
@@ -44,6 +44,14 @@ DEFAULT_IGNORE = {"github.com"}
 OFF, STARTING, ON, ERROR = "off", "starting", "on", "error"
 
 GREEN, GRAY, ORANGE, RED = "#4caf50", "#9e9e9e", "#e6a23c", "#f44336"
+
+# tampon ALSA reglable depuis la fenetre (voir l'en-tete de voicepipe.sh)
+BUFFER_MIN_MS, BUFFER_DEFAULT_MS, BUFFER_MAX_MS = 40, 80, 300
+
+# detecte si quelqu'un enregistre le loopback distant : un substream de
+# capture pcm1c non "closed" = une ecoute est ouverte sur le VPS
+LISTEN_CMD = ("grep -L closed /proc/asound/Loopback/pcm1c/sub*/status "
+              "2>/dev/null | grep -q . && echo L || echo N")
 
 
 def discover_hosts():
@@ -91,6 +99,7 @@ class StreamManager(QObject):
         super().__init__()
         self.procs = {}      # host -> Popen
         self.stopping = set()
+        self.buffer_ms = BUFFER_DEFAULT_MS
         os.makedirs(LOG_DIR, exist_ok=True)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self._poll)
@@ -105,7 +114,10 @@ class StreamManager(QObject):
     def start(self, host):
         if host in self.procs:
             return
-        env = dict(os.environ, VPS_HOST=host)
+        # ratio tampon/periode 4:1, comme les defauts 80/20 ms du script
+        env = dict(os.environ, VPS_HOST=host,
+                   BUFFER_US=str(self.buffer_ms * 1000),
+                   PERIOD_US=str(self.buffer_ms * 250))
         log = open(self.log_path(host), "wb", buffering=0)
         try:
             proc = subprocess.Popen(
@@ -161,6 +173,49 @@ class StreamManager(QObject):
                     pass
 
 
+class ListenerChecker(QObject):
+    """Verifie periodiquement en SSH si une ecoute est ouverte sur le
+    loopback de chaque host (un process qui enregistre Loopback,1,0).
+    Tout est non bloquant : un ssh par host, ramasse par un timer."""
+
+    result = pyqtSignal(str, bool)  # host, ecoute active
+
+    INTERVAL_MS = 30000
+
+    def __init__(self, hosts):
+        super().__init__()
+        self.hosts = hosts
+        self.pending = {}  # host -> Popen
+        self.collect_timer = QTimer(self)
+        self.collect_timer.timeout.connect(self._collect)
+        self.collect_timer.start(500)
+        self.refresh_timer = QTimer(self)
+        self.refresh_timer.timeout.connect(self.refresh)
+        self.refresh_timer.start(self.INTERVAL_MS)
+        self.refresh()
+
+    def refresh(self):
+        for host in self.hosts:
+            if host in self.pending:
+                continue
+            try:
+                self.pending[host] = subprocess.Popen(
+                    ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
+                     host, LISTEN_CMD],
+                    stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                    stdin=subprocess.DEVNULL)
+            except OSError:
+                self.result.emit(host, False)
+
+    def _collect(self):
+        for host, proc in list(self.pending.items()):
+            if proc.poll() is None:
+                continue
+            del self.pending[host]
+            out = proc.stdout.read() if proc.stdout else b""
+            self.result.emit(host, proc.returncode == 0 and b"L" in out)
+
+
 class ToggleSwitch(QCheckBox):
     """QCheckBox peinte en forme d'interrupteur."""
 
@@ -202,11 +257,29 @@ class Voyant(QLabel):
         self.setStyleSheet("border-radius: 7px; background: %s;" % color)
 
 
+class StatusDot(QLabel):
+    """Pastille devant le nom du VPS : vert = une ecoute tourne sur son
+    loopback, rouge = pas d'ecoute (ou host injoignable), gris = inconnu."""
+
+    def __init__(self):
+        super().__init__()
+        self.setFixedSize(10, 10)
+        self.set_state(None)
+
+    def set_state(self, ok):
+        color = GRAY if ok is None else (GREEN if ok else RED)
+        self.setStyleSheet("border-radius: 5px; background: %s;" % color)
+        label = "inconnue" if ok is None else ("active" if ok else "absente")
+        self.setToolTip("écoute distante : " + label)
+
+
 class HostRow(QWidget):
     def __init__(self, host, toggle_cb):
         super().__init__()
         layout = QHBoxLayout(self)
         layout.setContentsMargins(8, 2, 8, 2)
+        self.dot = StatusDot()
+        layout.addWidget(self.dot)
         name = QLabel(host)
         name.setMinimumWidth(160)
         self.switch = ToggleSwitch()
@@ -228,8 +301,9 @@ class HostRow(QWidget):
 
 
 class MainWindow(QWidget):
-    def __init__(self, hosts, toggle_cb, master_cb):
+    def __init__(self, hosts, toggle_cb, master_cb, buffer_cb):
         super().__init__()
+        self.buffer_cb = buffer_cb
         self.setWindowTitle("VoicePipe")
         layout = QVBoxLayout(self)
 
@@ -261,6 +335,34 @@ class MainWindow(QWidget):
             layout.addWidget(row)
         layout.addStretch(1)
 
+        # slider du tampon ALSA, en bas : plus haut = moins de coupures,
+        # plus de latence ; applique aux streams en cours et suivants
+        buf = QHBoxLayout()
+        buf.setContentsMargins(8, 6, 8, 2)
+        self.buffer_label = QLabel()
+        self.slider = QSlider(Qt.Horizontal)
+        self.slider.setRange(BUFFER_MIN_MS, BUFFER_MAX_MS)
+        self.slider.setValue(BUFFER_DEFAULT_MS)
+        self.slider.setSingleStep(10)
+        self.slider.setPageStep(20)
+        self.slider.setToolTip(
+            "Tampon audio : plus haut = moins de micro-coupures,\n"
+            "plus de latence. Les streams en cours sont relancés.")
+        self.slider.valueChanged.connect(self._on_slider_changed)
+        self.slider.sliderReleased.connect(
+            lambda: self.buffer_cb(self.slider.value()))
+        buf.addWidget(QLabel("Tampon"))
+        buf.addWidget(self.slider, 1)
+        buf.addWidget(self.buffer_label)
+        layout.addLayout(buf)
+        self._on_slider_changed(self.slider.value())
+
+    def _on_slider_changed(self, value):
+        self.buffer_label.setText("%d ms" % value)
+        # au clavier il n'y a pas de sliderReleased : applique directement
+        if not self.slider.isSliderDown():
+            self.buffer_cb(value)
+
     def set_voyant(self, on):
         self.voyant.set_on(on)
         self.master_switch.blockSignals(True)
@@ -280,8 +382,13 @@ class VoiceTrayApp:
         self.manager = StreamManager()
         self.desired = set()       # hosts dont l'interrupteur est ON
         self.transmitting = True   # etat du voyant / interrupteur maitre
+        self.restart_pending = set()  # a relancer des que leur arret est acte
 
-        self.window = MainWindow(self.hosts, self.toggle_host, self.set_transmitting)
+        self.window = MainWindow(self.hosts, self.toggle_host,
+                                 self.set_transmitting, self.set_buffer)
+
+        self.checker = ListenerChecker(self.hosts)
+        self.checker.result.connect(self._on_listener_result)
 
         self.icon_on = self._load_icon("voicepipe-on.svg")
         self.icon_idle = self._load_icon("voicepipe-idle.svg")
@@ -338,6 +445,20 @@ class VoiceTrayApp:
                 self._set_host_ui(host, False, "inactif", GRAY)
         self._update_tray()
 
+    def set_buffer(self, ms):
+        if ms == self.manager.buffer_ms:
+            return
+        self.manager.buffer_ms = ms
+        # relance les streams en cours pour appliquer le nouveau tampon
+        for host in list(self.manager.procs):
+            self.restart_pending.add(host)
+            self.manager.stop(host)
+
+    def _on_listener_result(self, host, listening):
+        row = self.window.rows.get(host)
+        if row:
+            row.dot.set_state(listening)
+
     def set_transmitting(self, on):
         self.transmitting = on
         self.window.set_voyant(on)
@@ -362,10 +483,18 @@ class VoiceTrayApp:
             self._set_host_ui(host, True, "actif", GREEN)
         elif state == ERROR:
             self.desired.discard(host)
+            self.restart_pending.discard(host)
             self._set_host_ui(host, False, "erreur : " + message, RED)
             self.tray.showMessage("VoicePipe — " + host, message,
                                   QSystemTrayIcon.Warning, 8000)
         else:  # OFF
+            if host in self.restart_pending:
+                self.restart_pending.discard(host)
+                if self.transmitting and host in self.desired:
+                    # arret demande par set_buffer : repart aussitot
+                    self.manager.start(host)
+                    self._update_tray()
+                    return
             if host in self.desired and not self.transmitting:
                 self._set_host_ui(host, True, "suspendu", ORANGE)
             else:
