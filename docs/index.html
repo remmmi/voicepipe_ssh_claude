@@ -137,6 +137,14 @@ header { padding: 84px 0 40px; text-align: center; }
   color: var(--text);
 }
 .tunnel-caption em { color: var(--yellow); font-style: normal; }
+.wanted {
+  margin-top: 18px;
+  padding: 12px 16px;
+  border: 1px dashed var(--yellow);
+  font-size: .85rem;
+  color: var(--cream);
+}
+.wanted a { color: var(--yellow); }
 
 /* ---------- sections ---------- */
 section { padding: 56px 0 8px; }
@@ -399,6 +407,11 @@ python3 voxtunnel-tray.py
 python3 voxtunnel/client/voxtunnel-tray.py
 <span class="c"># CI-tested only, never on real hardware - details in client-macos/ and client-windows/</span></pre>
   </div>
+
+  <p class="wanted">Got a Mac or a Windows box? These clients have only ever
+  seen CI runners. If you can spare ten minutes to try one on real hardware,
+  <a href="https://github.com/remmmi/voxtunnel/issues">open an issue</a> with
+  what worked and what broke — even "it launched" is gold.</p>
 
   <div class="term">
     <div class="term-head"><span>no GUI needed</span><button data-copy="cli2">copy</button></div>
