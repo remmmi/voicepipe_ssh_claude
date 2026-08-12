@@ -30,7 +30,7 @@ import sys
 import tempfile
 import time
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 # Linux est la plateforme de reference (testee sur du vrai materiel).
 # macOS et Windows sont EXPERIMENTAUX : valides uniquement en CI,
