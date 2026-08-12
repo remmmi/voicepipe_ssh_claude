@@ -96,6 +96,12 @@ header { padding: 84px 0 40px; text-align: center; }
   color: var(--bg);
   box-shadow: 0 0 24px rgba(51,181,255,.5);
 }
+.btn.cream { border-color: var(--cream); color: var(--cream); }
+.btn.cream:hover, .btn.cream:focus-visible {
+  background: var(--cream);
+  color: var(--bg);
+  box-shadow: 0 0 24px rgba(247,240,220,.4);
+}
 .btn.ghost { border-color: var(--frame); color: var(--text); }
 .btn.ghost:hover, .btn.ghost:focus-visible {
   border-color: var(--cream); color: var(--cream);
@@ -317,9 +323,9 @@ a { color: var(--blue); }
   <h1 class="blackletter">Voxtunnel</h1>
   <p class="tagline">La voix locale, en tunnel direct vers les serveurs.</p>
   <div class="cta">
-    <a class="btn" href="https://github.com/remmmi/voxtunnel/releases/latest">Télécharger le .deb</a>
-    <a class="btn alt" href="#win-mac">Windows / macOS</a>
-    <a class="btn ghost" href="https://github.com/remmmi/voxtunnel">Source sur GitHub</a>
+    <a class="btn alt" href="https://github.com/remmmi/voxtunnel/releases/latest">Télécharger le .deb</a>
+    <a class="btn cream" href="#win-mac">Windows / macOS</a>
+    <a class="btn" href="https://github.com/remmmi/voxtunnel">Source sur GitHub</a>
   </div>
 
   <div class="tunnel" aria-label="Schéma : l'audio du micro traverse un tunnel SSH vers un serveur">
