@@ -1,0 +1,31 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check tag matches __version__
+        run: |
+          VERSION="$(sed -n 's/^__version__ = "\(.*\)"/\1/p' client/voxtunnel-tray.py)"
+          [ "v$VERSION" = "$GITHUB_REF_NAME" ] || {
+            echo "tag $GITHUB_REF_NAME does not match __version__ $VERSION" >&2
+            exit 1
+          }
+      - name: Build packages
+        run: bash build-deb.sh
+      - name: Create release with packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            voxtunnel_*_all.deb voxtunnel-server_*_all.deb \
+            --title "Voxtunnel $GITHUB_REF_NAME" \
+            --generate-notes
