@@ -388,8 +388,9 @@ a { color: var(--blue); }
   </div>
 
   <div class="term">
-    <div class="term-head"><span>client (desktop)</span><button data-copy="cli">copy</button></div>
-    <pre id="cli"><span class="g">sudo</span> apt install ./voxtunnel_*.deb
+    <div class="term-head"><span>client (Linux desktop)</span><button data-copy="cli">copy</button></div>
+    <pre id="cli"><span class="c"># same releases page, the voxtunnel_*.deb file</span>
+<span class="g">sudo</span> apt install ./voxtunnel_*.deb
 voxtunnel</pre>
   </div>
 
@@ -404,12 +405,25 @@ python3 voxtunnel-tray.py
   </div>
 
   <div class="term">
-    <div class="term-head"><span>macOS / Windows — experimental</span><button data-copy="xp">copy</button></div>
-    <pre id="xp"><span class="c"># macOS: brew install ffmpeg python; pip3 install PyQt5</span>
-<span class="c"># Windows: WSL2 recommended (see client-windows/); native: winget install ffmpeg python; pip install PyQt5</span>
+    <div class="term-head"><span>Windows — WSL2, recommended</span><button data-copy="win">copy</button></div>
+    <pre id="win"><span class="c"># the Linux client runs as-is inside WSL2: WSLg forwards the Windows</span>
+<span class="c"># microphone and shows the window on the Windows desktop</span>
+wsl --install -d Debian
+<span class="c"># then, inside WSL, with the same voxtunnel_*.deb as above:</span>
+<span class="g">sudo</span> apt install ./voxtunnel_*.deb
+voxtunnel
+<span class="c"># SSH keys go in the WSL home (~/.ssh), not the Windows one</span>
+<span class="c"># no WSL? native path (experimental, no build yet): client-windows/</span></pre>
+  </div>
+
+  <div class="term">
+    <div class="term-head"><span>macOS — from source, experimental</span><button data-copy="mac">copy</button></div>
+    <pre id="mac"><span class="c"># no packaged build yet: the menu bar app runs from a clone</span>
+<span class="g">brew</span> install ffmpeg python
+pip3 install PyQt5
 <span class="g">git</span> clone https://github.com/remmmi/voxtunnel.git
 python3 voxtunnel/client/voxtunnel-tray.py
-<span class="c"># CI-tested only, never on real hardware - details in client-macos/ and client-windows/</span></pre>
+<span class="c"># macOS asks for mic permission on first capture - details in client-macos/</span></pre>
   </div>
 
   <p class="wanted">Got a Mac or a Windows box? These clients have only ever
@@ -419,8 +433,10 @@ python3 voxtunnel/client/voxtunnel-tray.py
 
   <div class="term">
     <div class="term-head"><span>no GUI needed</span><button data-copy="cli2">copy</button></div>
-    <pre id="cli2"><span class="g">VPS_HOST</span>=user@my-vps ./voxtunnel.sh --check
-<span class="g">VPS_HOST</span>=user@my-vps ./voxtunnel.sh</pre>
+    <pre id="cli2"><span class="c"># Linux / WSL - the engine ships with the .deb:</span>
+<span class="g">VPS_HOST</span>=user@my-vps /usr/share/voxtunnel/voxtunnel.sh --check
+<span class="g">VPS_HOST</span>=user@my-vps /usr/share/voxtunnel/voxtunnel.sh
+<span class="c"># macOS: client-macos/voxtunnel.sh - Windows: client-windows\voxtunnel.cmd user@vps "Mic name"</span></pre>
   </div>
 </section>
 

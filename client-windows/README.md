@@ -9,14 +9,15 @@ tray icon is not relayed):
 
 ```
 wsl --install -d Debian
-# inside WSL:
-sudo apt install alsa-utils openssh-client python3-pyqt5
-git clone https://github.com/remmmi/voxtunnel.git
-VPS_HOST=user@vps voxtunnel/client/voxtunnel.sh --check
-python3 voxtunnel/client/voxtunnel-tray.py
+# inside WSL, with voxtunnel_*.deb downloaded from
+# github.com/remmmi/voxtunnel/releases/latest:
+sudo apt install ./voxtunnel_*.deb
+voxtunnel
 ```
 
-SSH keys live in the WSL home (`~/.ssh`), not the Windows one.
+The .deb pulls its own dependencies. SSH keys live in the WSL home
+(`~/.ssh`), not the Windows one. To run from source instead, clone the
+repository and launch `client/voxtunnel-tray.py` with python3.
 
 ## Native path (experimental)
 
