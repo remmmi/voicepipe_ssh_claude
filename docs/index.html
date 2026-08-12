@@ -90,6 +90,12 @@ header { padding: 84px 0 40px; text-align: center; }
   color: var(--bg);
   box-shadow: 0 0 24px rgba(255,46,196,.5);
 }
+.btn.alt { border-color: var(--blue); color: var(--blue); }
+.btn.alt:hover, .btn.alt:focus-visible {
+  background: var(--blue);
+  color: var(--bg);
+  box-shadow: 0 0 24px rgba(51,181,255,.5);
+}
 .btn.ghost { border-color: var(--frame); color: var(--text); }
 .btn.ghost:hover, .btn.ghost:focus-visible {
   border-color: var(--cream); color: var(--cream);
@@ -310,6 +316,7 @@ a { color: var(--blue); }
   <p class="tagline">The local voice, tunneled straight to the servers.</p>
   <div class="cta">
     <a class="btn" href="https://github.com/remmmi/voxtunnel/releases/latest">Download .deb</a>
+    <a class="btn alt" href="#win-mac">Windows / macOS</a>
     <a class="btn ghost" href="https://github.com/remmmi/voxtunnel">Source on GitHub</a>
   </div>
 
@@ -404,7 +411,7 @@ python3 voxtunnel-tray.py
 <span class="c">#   sudo ../server/setup-vps.sh --persist</span></pre>
   </div>
 
-  <div class="term">
+  <div class="term" id="win-mac">
     <div class="term-head"><span>Windows — WSL2, recommended</span><button data-copy="win">copy</button></div>
     <pre id="win"><span class="c"># the Linux client runs as-is inside WSL2: WSLg forwards the Windows</span>
 <span class="c"># microphone and shows the window on the Windows desktop</span>
